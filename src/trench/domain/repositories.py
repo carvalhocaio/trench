@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from typing import Protocol
 from uuid import UUID
 
@@ -38,6 +39,8 @@ class PlayerRepository(Protocol):
     async def save(self, player: Player, /) -> None: ...
 
     async def get(self, player_id: UUID) -> Player | None: ...
+
+    async def get_many(self, player_ids: Collection[UUID]) -> list[Player]: ...
 
     async def list_by_team(self, team_id: UUID) -> list[Player]: ...
 

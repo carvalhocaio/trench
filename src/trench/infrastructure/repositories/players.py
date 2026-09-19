@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from uuid import UUID
 
 from sqlalchemy import select
@@ -30,6 +31,16 @@ class SqlPlayerRepository(SqlRepository[PlayerModel, Player]):
 
     async def get(self, player_id: UUID) -> Player | None:
         return await self._get(player_id)
+
+    async def get_many(self, player_ids: Collection[UUID]) -> list[Player]:
+        if not player_ids:
+            return []
+        query = (
+            select(PlayerModel)
+            .where(PlayerModel.id.in_(player_ids))
+            .order_by(PlayerModel.name)
+        )
+        return await self._fetch(query)
 
     async def list_by_team(self, team_id: UUID) -> list[Player]:
         query = (

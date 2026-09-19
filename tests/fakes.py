@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Iterable
+from collections.abc import Collection, Hashable, Iterable
 from uuid import UUID
 
 from trench.domain.entities import (
@@ -80,6 +80,12 @@ class FakePlayerRepository(InMemoryRepository[UUID, Player]):
 
     async def get(self, player_id: UUID) -> Player | None:
         return self._items.get(player_id)
+
+    async def get_many(self, player_ids: Collection[UUID]) -> list[Player]:
+        return sorted(
+            (self._items[i] for i in set(player_ids) if i in self._items),
+            key=lambda player: player.name,
+        )
 
     async def list_by_team(self, team_id: UUID) -> list[Player]:
         return sorted(

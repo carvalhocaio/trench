@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from trench.application.highlights import HighlightsService
 from trench.application.injuries import InjuryReportService
 from trench.application.predictions import PredictionService
 from trench.application.roster import RosterService
@@ -165,3 +166,14 @@ def get_prediction_service(
 
 
 PredictionServiceDep = Annotated[PredictionService, Depends(get_prediction_service)]
+
+
+def get_highlights_service(
+    games: GameRepositoryDep,
+    players: PlayerRepositoryDep,
+    player_stats: PlayerStatsRepositoryDep,
+) -> HighlightsService:
+    return HighlightsService(games=games, players=players, player_stats=player_stats)
+
+
+HighlightsServiceDep = Annotated[HighlightsService, Depends(get_highlights_service)]

@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from datetime import datetime
 from uuid import UUID
 
@@ -10,6 +11,7 @@ from pydantic import (
     NonNegativeInt,
 )
 
+from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
 from trench.application.predictions import GamePrediction
 from trench.domain.entities import MAX_WEEK, Score
@@ -224,3 +226,32 @@ def _side(
         win_probability=probability,
         rating=RatingRead.model_validate(rating),
     )
+
+
+class PlayerSeasonRead(_Output):
+    player: PlayerRead
+    games: int
+    passing_touchdowns: int
+    rushing_attempts: int
+    rushing_yards: int
+    yards_per_carry: float | None
+    sacks: float
+
+
+class HighlightsRead(BaseModel):
+    season: int
+    passing_touchdowns: list[PlayerSeasonRead]
+    yards_per_carry: list[PlayerSeasonRead]
+    sacks: list[PlayerSeasonRead]
+
+    @classmethod
+    def from_leaders(cls, season: int, leaders: SeasonLeaders) -> HighlightsRead:
+        def rows(seasons: Iterable[PlayerSeason]) -> list[PlayerSeasonRead]:
+            return [PlayerSeasonRead.model_validate(s) for s in seasons]
+
+        return cls(
+            season=season,
+            passing_touchdowns=rows(leaders.passing_touchdowns),
+            yards_per_carry=rows(leaders.yards_per_carry),
+            sacks=rows(leaders.sacks),
+        )

@@ -9,6 +9,7 @@ from trench.api.routes import (
     absences,
     games,
     health,
+    highlights,
     players,
     predictions,
     stats,
@@ -36,4 +37,5 @@ def create_app() -> FastAPI:
     app.include_router(stats.router)
     app.include_router(absences.router)
     app.include_router(predictions.router)
+    app.include_router(highlights.router)
     return app

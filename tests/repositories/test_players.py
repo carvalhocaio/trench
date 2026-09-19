@@ -1,4 +1,5 @@
 from dataclasses import replace
+from uuid import uuid7
 
 from tests.factories import make_player
 from tests.repositories.conftest import AfcWest, Repositories
@@ -40,3 +41,17 @@ async def test_save_moves_traded_player(repos: Repositories, afc_west: AfcWest) 
     assert await repos.players.list_by_team(afc_west.den.id) == [
         replace(player, team_id=afc_west.den.id)
     ]
+
+
+async def test_get_many_returns_known_players_by_name(
+    repos: Repositories, afc_west: AfcWest
+) -> None:
+    zed = make_player(afc_west.kc, Position.S, "Zed")
+    abe = make_player(afc_west.lv, Position.LB, "Abe")
+    for player in (zed, abe):
+        await repos.players.save(player)
+
+    found = await repos.players.get_many([zed.id, abe.id, uuid7()])
+
+    assert found == [abe, zed]
+    assert await repos.players.get_many([]) == []
