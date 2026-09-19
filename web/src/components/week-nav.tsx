@@ -1,13 +1,14 @@
 import Link from "next/link";
 
-const MIN_WEEK = 1;
-const MAX_WEEK = 22;
+import { MAX_WEEK, MIN_WEEK } from "@/lib/season";
 
 function NavLink({
+  basePath,
   season,
   week,
   children,
 }: {
+  basePath: string;
   season: number;
   week: number | null;
   children: React.ReactNode;
@@ -17,7 +18,7 @@ function NavLink({
   }
   return (
     <Link
-      href={`/?season=${season}&week=${week}`}
+      href={`${basePath}?season=${season}&week=${week}`}
       className="text-sm font-medium text-nfl-navy hover:underline"
     >
       {children}
@@ -25,19 +26,27 @@ function NavLink({
   );
 }
 
-export function WeekNav({ season, week }: { season: number; week: number }) {
+export function WeekNav({
+  season,
+  week,
+  basePath = "/",
+}: {
+  season: number;
+  week: number;
+  basePath?: string;
+}) {
   const previousWeek = week > MIN_WEEK ? week - 1 : null;
   const nextWeek = week < MAX_WEEK ? week + 1 : null;
 
   return (
     <div className="mb-6 flex items-center justify-between">
-      <NavLink season={season} week={previousWeek}>
+      <NavLink basePath={basePath} season={season} week={previousWeek}>
         ← Semana anterior
       </NavLink>
-      <h1 className="text-sm font-semibold tabular-nums text-zinc-700">
+      <p className="text-sm font-semibold tabular-nums text-zinc-700">
         Temporada {season} · Semana {week}
-      </h1>
-      <NavLink season={season} week={nextWeek}>
+      </p>
+      <NavLink basePath={basePath} season={season} week={nextWeek}>
         Próxima semana →
       </NavLink>
     </div>

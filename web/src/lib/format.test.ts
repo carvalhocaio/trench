@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { formatKickoff, formatNumber, formatPercent, pluralize } from "@/lib/format";
+import {
+  formatKickoff,
+  formatNumber,
+  formatPercent,
+  formatPoints,
+  formatSignedPoints,
+  pluralize,
+} from "@/lib/format";
 
 describe("formatNumber", () => {
   it("uses a comma as the decimal separator", () => {
@@ -11,6 +18,21 @@ describe("formatNumber", () => {
 describe("formatPercent", () => {
   it("formats a fraction without decimals", () => {
     expect(formatPercent(0.624)).toBe("62%");
+  });
+});
+
+describe("formatPoints", () => {
+  it("always shows exactly one decimal place", () => {
+    expect(formatPoints(23)).toBe("23,0");
+    expect(formatPoints(23.456)).toBe("23,5");
+  });
+});
+
+describe("formatSignedPoints", () => {
+  it("shows a leading sign for positive, negative and zero values", () => {
+    expect(formatSignedPoints(2.3)).toBe("+2,3");
+    expect(formatSignedPoints(-2.3)).toBe("-2,3");
+    expect(formatSignedPoints(0)).toBe("+0,0");
   });
 });
 

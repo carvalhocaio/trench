@@ -1,19 +1,29 @@
+import type { Metadata } from "next";
+
 import { listGames, listTeams, predictWeek } from "@/lib/api/queries";
-import { currentSeason, currentWeek } from "@/lib/season";
+import { clampWeek, currentSeason, currentWeek, parseIntParam } from "@/lib/season";
 import { indexTeams } from "@/lib/teams";
 import { GameCard } from "@/components/game-card";
 import { WeekNav } from "@/components/week-nav";
 
+// The root layout's title template does not apply to a page in the same
+// route segment, so the composed title is spelled out here.
+export const metadata: Metadata = {
+  title: "Semana · Trench",
+};
+
 export default async function HomePage({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
-  const season = Number(params.season) || currentSeason();
+  const season = parseIntParam(params.season) ?? currentSeason();
 
   const [seasonGames, teams] = await Promise.all([
     listGames({ season }),
     listTeams(),
   ]);
 
-  const week = Number(params.week) || currentWeek(seasonGames);
+  const parsedWeek = parseIntParam(params.week);
+  const week =
+    parsedWeek !== undefined ? clampWeek(parsedWeek) : currentWeek(seasonGames);
   const weekGames = seasonGames.filter((game) => game.week === week);
   const predictions = await predictWeek(season, week);
   const predictionByGameId = new Map(

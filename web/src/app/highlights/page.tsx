@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import { listTeams, seasonHighlights } from "@/lib/api/queries";
 import { currentSeason } from "@/lib/season";
 import { indexTeams } from "@/lib/teams";
 import { formatNumber, pluralize } from "@/lib/format";
 import { HighlightsTable } from "@/components/highlights-table";
+
+export const metadata: Metadata = {
+  title: "Destaques",
+};
 
 export default async function HighlightsPage({
   searchParams,

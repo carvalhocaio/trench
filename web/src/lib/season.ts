@@ -1,5 +1,8 @@
 import { TIMEZONE } from "@/lib/format";
+import { MAX_WEEK, MIN_WEEK } from "@/lib/season-constants";
 import type { GameRead } from "@/lib/api/types";
+
+export { MAX_WEEK, MIN_WEEK };
 
 const yearMonthFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: TIMEZONE,
@@ -28,4 +31,17 @@ export function currentWeek(games: Pick<GameRead, "week" | "status">[]): number 
   }
   const weeks = games.map((game) => game.week);
   return weeks.length > 0 ? Math.max(...weeks) : 1;
+}
+
+export function parseIntParam(value: string | string[] | undefined): number | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (raw === undefined || raw.trim() === "") {
+    return undefined;
+  }
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) ? parsed : undefined;
+}
+
+export function clampWeek(week: number): number {
+  return Math.min(MAX_WEEK, Math.max(MIN_WEEK, week));
 }

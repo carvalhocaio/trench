@@ -11,6 +11,7 @@ export type TeamStatsPayload = components["schemas"]["TeamStatsPayload"];
 export type TeamStatsRead = components["schemas"]["TeamStatsRead"];
 export type PlayerStatsPayload = components["schemas"]["PlayerStatsPayload"];
 export type PlayerStatsRead = components["schemas"]["PlayerStatsRead"];
+export type GameStatsRead = components["schemas"]["GameStatsRead"];
 export type AbsencePayload = components["schemas"]["AbsencePayload"];
 export type AbsenceRead = components["schemas"]["AbsenceRead"];
 export type AbsenceStatus = components["schemas"]["AbsenceStatus"];

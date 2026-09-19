@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { currentSeason, currentWeek } from "@/lib/season";
+import { clampWeek, currentSeason, currentWeek, parseIntParam } from "@/lib/season";
 import type { GameRead } from "@/lib/api/types";
 
 function game(week: number, status: GameRead["status"]): Pick<GameRead, "week" | "status"> {
@@ -32,5 +32,38 @@ describe("currentWeek", () => {
 
   it("defaults to week 1 when there are no games", () => {
     expect(currentWeek([])).toBe(1);
+  });
+});
+
+describe("parseIntParam", () => {
+  it("parses a valid integer string", () => {
+    expect(parseIntParam("3")).toBe(3);
+  });
+
+  it("takes the first value from a repeated query param", () => {
+    expect(parseIntParam(["4", "5"])).toBe(4);
+  });
+
+  it("returns undefined for missing, empty or non-integer values", () => {
+    expect(parseIntParam(undefined)).toBeUndefined();
+    expect(parseIntParam("")).toBeUndefined();
+    expect(parseIntParam("3.5")).toBeUndefined();
+    expect(parseIntParam("abc")).toBeUndefined();
+  });
+});
+
+describe("clampWeek", () => {
+  it("keeps values within 1 and 18 unchanged", () => {
+    expect(clampWeek(10)).toBe(10);
+  });
+
+  it("clamps values below 1 up to 1", () => {
+    expect(clampWeek(0)).toBe(1);
+    expect(clampWeek(-5)).toBe(1);
+  });
+
+  it("clamps values above 18 down to 18", () => {
+    expect(clampWeek(19)).toBe(18);
+    expect(clampWeek(100)).toBe(18);
   });
 });

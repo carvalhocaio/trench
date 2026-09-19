@@ -11,6 +11,17 @@ const percentFormatter = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 0,
 });
 
+const pointsFormatter = new Intl.NumberFormat(LOCALE, {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const signedPointsFormatter = new Intl.NumberFormat(LOCALE, {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+  signDisplay: "always",
+});
+
 const kickoffFormatter = new Intl.DateTimeFormat(LOCALE, {
   timeZone: TIMEZONE,
   day: "2-digit",
@@ -31,6 +42,14 @@ export function formatNumber(value: number): string {
 
 export function formatPercent(fraction: number): string {
   return percentFormatter.format(fraction);
+}
+
+export function formatPoints(value: number): string {
+  return pointsFormatter.format(value);
+}
+
+export function formatSignedPoints(value: number): string {
+  return signedPointsFormatter.format(value);
 }
 
 export function formatKickoff(isoDate: string): string {

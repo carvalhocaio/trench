@@ -5,7 +5,10 @@ import { Header } from "@/components/header";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trench",
+  title: {
+    default: "Trench",
+    template: "%s · Trench",
+  },
   description: "Análise de jogos da NFL",
 };
 

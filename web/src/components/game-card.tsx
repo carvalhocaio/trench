@@ -1,25 +1,30 @@
 import Link from "next/link";
 
-import { formatKickoff, formatNumber } from "@/lib/format";
+import { formatKickoff, formatPoints } from "@/lib/format";
 import { ProbabilityBar } from "@/components/probability-bar";
 import { teamOf, type TeamIndex } from "@/lib/teams";
 import type { GameRead, PredictionRead } from "@/lib/api/types";
 
 function TeamRow({
   name,
+  isHome,
   projectedPoints,
   score,
 }: {
   name: string;
+  isHome: boolean;
   projectedPoints: number | undefined;
   score: number | undefined;
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="font-medium text-zinc-900">{name}</span>
+      <span className="font-medium text-zinc-900">
+        {isHome && <span className="mr-1 text-zinc-400">@</span>}
+        {name}
+      </span>
       <span className="flex items-center gap-3 tabular-nums">
         {projectedPoints !== undefined && (
-          <span className="text-sm text-zinc-500">{formatNumber(projectedPoints)}</span>
+          <span className="text-sm text-zinc-500">{formatPoints(projectedPoints)}</span>
         )}
         {score !== undefined && (
           <span className="text-lg font-semibold text-zinc-900">{score}</span>
@@ -53,11 +58,13 @@ export function GameCard({
       <div className="space-y-2">
         <TeamRow
           name={away.name}
+          isHome={false}
           projectedPoints={prediction?.away.projected_points}
           score={isFinal ? game.score?.away : undefined}
         />
         <TeamRow
           name={home.name}
+          isHome
           projectedPoints={prediction?.home.projected_points}
           score={isFinal ? game.score?.home : undefined}
         />

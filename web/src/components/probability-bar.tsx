@@ -29,8 +29,12 @@ export function ProbabilityBar({
         />
       </div>
       <div className="mt-1 flex justify-between text-xs tabular-nums text-zinc-500">
-        <span>{formatPercent(topProbability)}</span>
-        <span>{formatPercent(bottomProbability)}</span>
+        <span>
+          {topLabel} {formatPercent(topProbability)}
+        </span>
+        <span>
+          {bottomLabel} {formatPercent(bottomProbability)}
+        </span>
       </div>
     </div>
   );
