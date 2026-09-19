@@ -117,3 +117,25 @@ async def test_player_stats_require_known_player(setup: Setup) -> None:
             rushing_yards=0,
             sacks=0.0,
         )
+
+
+async def test_lists_stats_of_a_game(setup: Setup) -> None:
+    await setup.service.record_team_stats(team_stats())
+    line = await setup.service.record_player_stats(
+        game_id=GAME.id,
+        player_id=RUNNER.id,
+        passing_touchdowns=0,
+        rushing_attempts=12,
+        rushing_yards=61,
+        sacks=0.0,
+    )
+
+    stats = await setup.service.of_game(GAME.id)
+
+    assert stats.team_stats == [team_stats()]
+    assert stats.player_stats == [line]
+
+
+async def test_stats_of_unknown_game(setup: Setup) -> None:
+    with pytest.raises(GameNotFoundError):
+        await setup.service.of_game(uuid7())

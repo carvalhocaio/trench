@@ -102,6 +102,12 @@ class FakeTeamGameStatsRepository(InMemoryRepository[tuple[UUID, UUID], TeamGame
     def key(self, entity: TeamGameStats) -> tuple[UUID, UUID]:
         return entity.game_id, entity.team_id
 
+    async def list_by_game(self, game_id: UUID) -> list[TeamGameStats]:
+        return sorted(
+            (stats for stats in self.all() if stats.game_id == game_id),
+            key=lambda stats: stats.team_id,
+        )
+
     async def list_by_season(self, season: int) -> list[TeamGameStats]:
         return [
             stats
@@ -119,6 +125,12 @@ class FakePlayerGameStatsRepository(
 
     def key(self, entity: PlayerGameStats) -> tuple[UUID, UUID]:
         return entity.game_id, entity.player_id
+
+    async def list_by_game(self, game_id: UUID) -> list[PlayerGameStats]:
+        return sorted(
+            (stats for stats in self.all() if stats.game_id == game_id),
+            key=lambda stats: stats.player_id,
+        )
 
     async def list_by_season(self, season: int) -> list[PlayerGameStats]:
         return [

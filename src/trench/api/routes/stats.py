@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from trench.api.dependencies import GameStatsServiceDep
 from trench.api.schemas import (
+    GameStatsRead,
     PlayerStatsPayload,
     PlayerStatsRead,
     TeamStatsPayload,
@@ -38,3 +39,8 @@ async def record_player_stats(
         game_id=game_id, player_id=player_id, **payload.model_dump()
     )
     return PlayerStatsRead.model_validate(recorded)
+
+
+@router.get("/stats")
+async def game_stats(game_id: UUID, stats: GameStatsServiceDep) -> GameStatsRead:
+    return GameStatsRead.model_validate(await stats.of_game(game_id))

@@ -194,6 +194,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/games/{game_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Game Stats */
+        get: operations["game_stats_games__game_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/games/{game_id}/absences": {
         parameters: {
             query?: never;
@@ -414,6 +431,13 @@ export interface components {
             away_team_id: string;
             status: components["schemas"]["GameStatus"];
             score: components["schemas"]["ScoreRead"] | null;
+        };
+        /** GameStatsRead */
+        GameStatsRead: {
+            /** Team Stats */
+            team_stats: components["schemas"]["TeamStatsRead"][];
+            /** Player Stats */
+            player_stats: components["schemas"]["PlayerStatsRead"][];
         };
         /**
          * GameStatus
@@ -1148,6 +1172,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlayerStatsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    game_stats_games__game_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                game_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameStatsRead"];
                 };
             };
             /** @description Validation Error */

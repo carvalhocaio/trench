@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import select
 
 from trench.domain.entities import TeamGameStats
@@ -31,6 +33,14 @@ class SqlTeamGameStatsRepository(SqlRepository[TeamGameStatsModel, TeamGameStats
             turnovers=entity.turnovers,
             sacks=entity.sacks,
         )
+
+    async def list_by_game(self, game_id: UUID) -> list[TeamGameStats]:
+        query = (
+            select(TeamGameStatsModel)
+            .where(TeamGameStatsModel.game_id == game_id)
+            .order_by(TeamGameStatsModel.team_id)
+        )
+        return await self._fetch(query)
 
     async def list_by_season(self, season: int) -> list[TeamGameStats]:
         query = (

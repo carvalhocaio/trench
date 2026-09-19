@@ -115,3 +115,20 @@ async def test_player_stats_for_unknown_player(
     )
 
     assert response.status_code == 404
+
+
+async def test_lists_recorded_stats_of_a_game(
+    client: AsyncClient, ids: dict[str, str]
+) -> None:
+    await client.put(f"/games/{ids['game']}/team-stats/{ids['KC']}", json=TEAM_STATS)
+    await client.put(
+        f"/games/{ids['game']}/player-stats/{ids['runner']}",
+        json={"rushing_attempts": 20, "rushing_yards": 94},
+    )
+
+    response = await client.get(f"/games/{ids['game']}/stats")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [row["team_id"] for row in body["team_stats"]] == [ids["KC"]]
+    assert [row["player_id"] for row in body["player_stats"]] == [ids["runner"]]

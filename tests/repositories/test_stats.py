@@ -57,3 +57,23 @@ async def test_player_stats_by_season(
 
     assert await repos.player_stats.list_by_season(SEASON) == [stats]
     assert await repos.player_stats.list_by_season(SEASON - 1) == []
+
+
+async def test_stats_by_game(
+    repos: Repositories, afc_west: AfcWest, game: Game
+) -> None:
+    other = make_game(afc_west.den, afc_west.lac)
+    await repos.games.save(other)
+    rusher = make_player(afc_west.kc, Position.EDGE, "Edge Rusher")
+    await repos.players.save(rusher)
+    home_stats = team_stats(game, home=True)
+    player_line = PlayerGameStats(
+        game_id=game.id, player_id=rusher.id, team_id=afc_west.kc.id, sacks=1.0
+    )
+    for stats in (home_stats, team_stats(other, home=True)):
+        await repos.team_stats.save(stats)
+    await repos.player_stats.save(player_line)
+
+    assert await repos.team_stats.list_by_game(game.id) == [home_stats]
+    assert await repos.player_stats.list_by_game(game.id) == [player_line]
+    assert await repos.player_stats.list_by_game(other.id) == []

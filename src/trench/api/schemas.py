@@ -131,6 +131,11 @@ class PlayerStatsRead(_Output):
     yards_per_carry: float | None
 
 
+class GameStatsRead(_Output):
+    team_stats: list[TeamStatsRead]
+    player_stats: list[PlayerStatsRead]
+
+
 class AbsencePayload(_Input):
     status: AbsenceStatus
 

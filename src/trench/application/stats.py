@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from uuid import UUID
 
 from trench.application.lookups import (
@@ -14,6 +15,12 @@ from trench.domain.repositories import (
 )
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class GameStats:
+    team_stats: list[TeamGameStats]
+    player_stats: list[PlayerGameStats]
+
+
 class GameStatsService:
     def __init__(
         self,
@@ -27,6 +34,13 @@ class GameStatsService:
         self._players = players
         self._team_stats = team_stats
         self._player_stats = player_stats
+
+    async def of_game(self, game_id: UUID) -> GameStats:
+        game = await require_game(self._games, game_id)
+        return GameStats(
+            team_stats=await self._team_stats.list_by_game(game.id),
+            player_stats=await self._player_stats.list_by_game(game.id),
+        )
 
     async def record_team_stats(self, stats: TeamGameStats) -> TeamGameStats:
         game = await require_game(self._games, stats.game_id)
