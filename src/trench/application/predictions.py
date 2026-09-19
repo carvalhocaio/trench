@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
+from trench.analytics.errors import InsufficientDataError
+from trench.domain.enums import GameStatus
 from trench.analytics.absences import AbsenceReport, assess_absences
 from trench.analytics.projection import Projection, project_game
 from trench.analytics.ratings import TeamRating, compute_ratings
@@ -75,6 +77,18 @@ class PredictionService:
             for game in season_games
             if game.week == week
         ]
+
+    async def predict_played(self, season: int) -> list[GamePrediction]:
+        season_games = await self._games.list_by_season(season)
+        predictions = []
+        for game in season_games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                predictions.append(await self._predict(game, season_games))
+            except InsufficientDataError:
+                continue
+        return predictions
 
     async def history(self, game_id: UUID) -> list[PredictionSnapshot]:
         await require_game(self._games, game_id)
