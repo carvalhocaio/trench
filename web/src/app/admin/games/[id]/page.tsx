@@ -11,6 +11,7 @@ import {
   listTeams,
 } from "@/lib/api/queries";
 import { formatKickoff } from "@/lib/format";
+import { hasKickedOff } from "@/lib/season";
 import { indexTeams, teamOf } from "@/lib/teams";
 import { ScoreForm } from "@/components/admin/score-form";
 import { TeamStatsForm } from "@/components/admin/team-stats-form";
@@ -65,6 +66,7 @@ export default async function AdminGamePage({
 
   const homeStats = gameStats.team_stats.find((stats) => stats.team_id === home.id);
   const awayStats = gameStats.team_stats.find((stats) => stats.team_id === away.id);
+  const hasStarted = hasKickedOff(game.kickoff);
 
   return (
     <div className="space-y-8">
@@ -80,32 +82,44 @@ export default async function AdminGamePage({
         </Link>
       </div>
 
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-900">Placar</h2>
-        <ScoreForm
-          gameId={id}
-          game={game}
-          homeLabel={home.abbreviation}
-          awayLabel={away.abbreviation}
-        />
-      </section>
+      {hasStarted ? (
+        <>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900">Placar</h2>
+            <ScoreForm
+              gameId={id}
+              game={game}
+              homeLabel={home.abbreviation}
+              awayLabel={away.abbreviation}
+            />
+          </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-900">
-          Estatísticas dos times
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TeamStatsForm gameId={id} team={away} stats={awayStats} />
-          <TeamStatsForm gameId={id} team={home} stats={homeStats} />
-        </div>
-      </section>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900">
+              Estatísticas dos times
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TeamStatsForm gameId={id} team={away} stats={awayStats} />
+              <TeamStatsForm gameId={id} team={home} stats={homeStats} />
+            </div>
+          </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-900">
-          Estatísticas dos jogadores
-        </h2>
-        <PlayerStatsSection gameId={id} players={players} stats={gameStats.player_stats} />
-      </section>
+          <section>
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900">
+              Estatísticas dos jogadores
+            </h2>
+            <PlayerStatsSection
+              gameId={id}
+              players={players}
+              stats={gameStats.player_stats}
+            />
+          </section>
+        </>
+      ) : (
+        <section className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-500">
+          Placar e estatísticas ficam liberados após o kickoff.
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">Injury report</h2>

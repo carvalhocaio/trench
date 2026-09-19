@@ -95,7 +95,13 @@ export function AbsencesSection({
             htmlFor="player_id"
             error={state.fieldErrors.player_id}
           >
-            <select id="player_id" name="player_id" required className={FIELD_CLASS}>
+            <select
+              id="player_id"
+              name="player_id"
+              required
+              defaultValue={state.values.player_id ?? ""}
+              className={FIELD_CLASS}
+            >
               <option value="">Selecione um jogador</option>
               {players.map((player) => (
                 <option key={player.id} value={player.id}>
@@ -105,7 +111,13 @@ export function AbsencesSection({
             </select>
           </FormField>
           <FormField label="Status" htmlFor="status" error={state.fieldErrors.status}>
-            <select id="status" name="status" required className={FIELD_CLASS}>
+            <select
+              id="status"
+              name="status"
+              required
+              defaultValue={state.values.status ?? ""}
+              className={FIELD_CLASS}
+            >
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
                   {ABSENCE_STATUS_LABELS[status]}

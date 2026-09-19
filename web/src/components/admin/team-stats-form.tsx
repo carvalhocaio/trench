@@ -44,7 +44,7 @@ export function TeamStatsForm({
           name="offensive_plays"
           min={0}
           required
-          defaultValue={stats?.offensive_plays}
+          defaultValue={state.values.offensive_plays ?? stats?.offensive_plays}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -58,7 +58,7 @@ export function TeamStatsForm({
           id={`passing_yards_${prefix}`}
           name="passing_yards"
           required
-          defaultValue={stats?.passing_yards}
+          defaultValue={state.values.passing_yards ?? stats?.passing_yards}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -72,7 +72,7 @@ export function TeamStatsForm({
           id={`rushing_yards_${prefix}`}
           name="rushing_yards"
           required
-          defaultValue={stats?.rushing_yards}
+          defaultValue={state.values.rushing_yards ?? stats?.rushing_yards}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -87,7 +87,7 @@ export function TeamStatsForm({
           name="turnovers"
           min={0}
           required
-          defaultValue={stats?.turnovers}
+          defaultValue={state.values.turnovers ?? stats?.turnovers}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -98,7 +98,7 @@ export function TeamStatsForm({
           name="sacks"
           min={0}
           required
-          defaultValue={stats?.sacks}
+          defaultValue={state.values.sacks ?? stats?.sacks}
           className={FIELD_CLASS}
         />
       </FormField>

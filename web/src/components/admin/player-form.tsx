@@ -46,7 +46,7 @@ function PlayerFormFields({
           id="name"
           name="name"
           required
-          defaultValue={editTarget?.player.name ?? ""}
+          defaultValue={state.values.name ?? editTarget?.player.name ?? ""}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -55,7 +55,7 @@ function PlayerFormFields({
           id="team_id"
           name="team_id"
           required
-          defaultValue={editTarget?.player.team_id ?? ""}
+          defaultValue={state.values.team_id ?? editTarget?.player.team_id ?? ""}
           className={FIELD_CLASS}
         >
           <option value="">Selecione um time</option>
@@ -71,7 +71,7 @@ function PlayerFormFields({
           id="position"
           name="position"
           required
-          defaultValue={editTarget?.player.position ?? ""}
+          defaultValue={state.values.position ?? editTarget?.player.position ?? ""}
           className={FIELD_CLASS}
         >
           <option value="">Selecione uma posição</option>

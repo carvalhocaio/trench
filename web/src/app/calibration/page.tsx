@@ -56,7 +56,9 @@ export default async function CalibrationPage({
         </div>
       ) : (
         <p className="text-sm text-zinc-500">
-          Ainda não há jogos finalizados para avaliar.
+          Ainda não há jogos para avaliar. O backtest começa com jogos finalizados
+          que tenham rodadas anteriores na temporada; o ao vivo, com jogos
+          finalizados que tenham um snapshot registrado antes do kickoff.
         </p>
       )}
     </div>

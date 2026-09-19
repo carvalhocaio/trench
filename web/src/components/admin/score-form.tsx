@@ -42,7 +42,7 @@ export function ScoreForm({
             name="away"
             min={0}
             required
-            defaultValue={game.score?.away}
+            defaultValue={state.values.away ?? game.score?.away}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -57,7 +57,7 @@ export function ScoreForm({
             name="home"
             min={0}
             required
-            defaultValue={game.score?.home}
+            defaultValue={state.values.home ?? game.score?.home}
             className={FIELD_CLASS}
           />
         </FormField>

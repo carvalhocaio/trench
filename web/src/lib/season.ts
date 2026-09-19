@@ -45,3 +45,7 @@ export function parseIntParam(value: string | string[] | undefined): number | un
 export function clampWeek(week: number): number {
   return Math.min(MAX_WEEK, Math.max(MIN_WEEK, week));
 }
+
+export function hasKickedOff(kickoff: string, now: Date = new Date()): boolean {
+  return new Date(kickoff).getTime() <= now.getTime();
+}

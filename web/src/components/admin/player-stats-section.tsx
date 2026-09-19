@@ -81,7 +81,7 @@ export function PlayerStatsSection({
             id="player_id"
             name="player_id"
             required
-            defaultValue={editingPlayerId ?? ""}
+            defaultValue={state.values.player_id ?? editingPlayerId ?? ""}
             className={FIELD_CLASS}
           >
             <option value="">Selecione um jogador</option>
@@ -103,7 +103,7 @@ export function PlayerStatsSection({
             name="passing_touchdowns"
             min={0}
             placeholder="0"
-            defaultValue={editingLine?.passing_touchdowns}
+            defaultValue={state.values.passing_touchdowns ?? editingLine?.passing_touchdowns}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -118,7 +118,7 @@ export function PlayerStatsSection({
             name="rushing_attempts"
             min={0}
             placeholder="0"
-            defaultValue={editingLine?.rushing_attempts}
+            defaultValue={state.values.rushing_attempts ?? editingLine?.rushing_attempts}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -132,7 +132,7 @@ export function PlayerStatsSection({
             id="rushing_yards"
             name="rushing_yards"
             placeholder="0"
-            defaultValue={editingLine?.rushing_yards}
+            defaultValue={state.values.rushing_yards ?? editingLine?.rushing_yards}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -144,7 +144,7 @@ export function PlayerStatsSection({
             min={0}
             step={0.5}
             placeholder="0"
-            defaultValue={editingLine?.sacks}
+            defaultValue={state.values.sacks ?? editingLine?.sacks}
             className={FIELD_CLASS}
           />
         </FormField>

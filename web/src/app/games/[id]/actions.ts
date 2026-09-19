@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { api, ApiError, unwrap } from "@/lib/api/client";
+import { translateErrorCode } from "@/lib/api/errors";
 
 export type RecordPredictionState = { error: string } | null;
 
@@ -18,7 +19,12 @@ export async function recordPredictionAction(
     );
   } catch (error) {
     if (error instanceof ApiError) {
-      return { error: typeof error.detail === "string" ? error.detail : error.message };
+      return {
+        error:
+          typeof error.detail === "string"
+            ? translateErrorCode(error.code, error.detail)
+            : error.message,
+      };
     }
     throw error;
   }

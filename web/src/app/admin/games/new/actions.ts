@@ -25,7 +25,7 @@ export async function scheduleGameAction(
   try {
     gameId = unwrap(await api.POST("/games", { body: payload })).id;
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
 
   revalidatePath("/");

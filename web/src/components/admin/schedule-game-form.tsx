@@ -37,7 +37,7 @@ export function ScheduleGameForm({
           id="season"
           name="season"
           required
-          defaultValue={defaultSeason}
+          defaultValue={state.values.season ?? defaultSeason}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -50,6 +50,7 @@ export function ScheduleGameForm({
           required
           min={MIN_WEEK}
           max={MAX_WEEK}
+          defaultValue={state.values.week}
           className={FIELD_CLASS}
         />
       </FormField>
@@ -60,6 +61,7 @@ export function ScheduleGameForm({
           id="kickoff"
           name="kickoff"
           required
+          defaultValue={state.values.kickoff}
           className={FIELD_CLASS}
         />
       </FormField>

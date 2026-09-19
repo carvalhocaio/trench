@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { clampWeek, currentSeason, currentWeek, parseIntParam } from "@/lib/season";
+import {
+  clampWeek,
+  currentSeason,
+  currentWeek,
+  hasKickedOff,
+  parseIntParam,
+} from "@/lib/season";
 import type { GameRead } from "@/lib/api/types";
 
 function game(week: number, status: GameRead["status"]): Pick<GameRead, "week" | "status"> {
@@ -49,6 +55,19 @@ describe("parseIntParam", () => {
     expect(parseIntParam("")).toBeUndefined();
     expect(parseIntParam("3.5")).toBeUndefined();
     expect(parseIntParam("abc")).toBeUndefined();
+  });
+});
+
+describe("hasKickedOff", () => {
+  const now = new Date("2026-09-19T12:00:00Z");
+
+  it("is false before kickoff", () => {
+    expect(hasKickedOff("2026-09-20T12:00:00Z", now)).toBe(false);
+  });
+
+  it("is true at or after kickoff", () => {
+    expect(hasKickedOff("2026-09-19T12:00:00Z", now)).toBe(true);
+    expect(hasKickedOff("2026-09-18T12:00:00Z", now)).toBe(true);
   });
 });
 

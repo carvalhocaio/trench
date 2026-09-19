@@ -6,7 +6,12 @@ import { api, apiErrorToFormState, unwrap } from "@/lib/api/client";
 import type { FormState } from "@/lib/form-state";
 import type { AbsenceStatus } from "@/lib/api/types";
 
-const SUCCESS_STATE: FormState = { fieldErrors: {}, formError: null, success: true };
+const SUCCESS_STATE: FormState = {
+  fieldErrors: {},
+  formError: null,
+  success: true,
+  values: {},
+};
 
 function revalidateGame(gameId: string): void {
   revalidatePath(`/admin/games/${gameId}`);
@@ -30,7 +35,7 @@ export async function recordScoreAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidateGame(gameId);
   return SUCCESS_STATE;
@@ -56,7 +61,7 @@ export async function recordTeamStatsAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidateGame(gameId);
   return SUCCESS_STATE;
@@ -81,7 +86,7 @@ export async function recordPlayerStatsAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidateGame(gameId);
   return SUCCESS_STATE;
@@ -102,7 +107,7 @@ export async function reportAbsenceAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidateGame(gameId);
   return SUCCESS_STATE;
@@ -112,6 +117,7 @@ export async function clearAbsenceAction(
   gameId: string,
   playerId: string,
   _previousState: FormState,
+  formData: FormData,
 ): Promise<FormState> {
   try {
     unwrap(
@@ -120,7 +126,7 @@ export async function clearAbsenceAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidateGame(gameId);
   return SUCCESS_STATE;

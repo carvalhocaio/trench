@@ -6,7 +6,12 @@ import { api, apiErrorToFormState, unwrap } from "@/lib/api/client";
 import type { FormState } from "@/lib/form-state";
 import type { Position } from "@/lib/api/types";
 
-const SUCCESS_STATE: FormState = { fieldErrors: {}, formError: null, success: true };
+const SUCCESS_STATE: FormState = {
+  fieldErrors: {},
+  formError: null,
+  success: true,
+  values: {},
+};
 
 function playerPayload(formData: FormData): {
   name: string;
@@ -32,7 +37,7 @@ export async function registerPlayerAction(
   try {
     unwrap(await api.POST("/players", { body: playerPayload(formData) }));
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidatePlayers();
   return SUCCESS_STATE;
@@ -51,7 +56,7 @@ export async function updatePlayerAction(
       }),
     );
   } catch (error) {
-    return apiErrorToFormState(error);
+    return apiErrorToFormState(error, formData);
   }
   revalidatePlayers();
   return SUCCESS_STATE;
