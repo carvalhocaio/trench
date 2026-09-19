@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from trench.analytics.errors import InsufficientDataError
-from trench.domain.enums import GameStatus
 from trench.analytics.absences import AbsenceReport, assess_absences
+from trench.analytics.errors import InsufficientDataError
 from trench.analytics.projection import Projection, project_game
 from trench.analytics.ratings import TeamRating, compute_ratings
 from trench.application.lookups import require_game
 from trench.config import AnalyticsSettings
 from trench.domain.entities import Game, Player, PredictionSnapshot
+from trench.domain.enums import GameStatus
 from trench.domain.repositories import (
     AbsenceRepository,
     GameRepository,
