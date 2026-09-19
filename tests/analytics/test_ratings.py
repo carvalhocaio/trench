@@ -2,24 +2,12 @@ from uuid import uuid7
 
 import pytest
 
-from tests.factories import make_game, make_team
+from tests.analytics.samples import DEN, KC, LV, WEEK_ONE, final
+from tests.factories import make_game
 from trench.analytics.errors import InsufficientDataError
 from trench.analytics.ratings import compute_ratings
-from trench.domain.entities import Game, Score, Team
 
 K = 3.0
-
-KC, LV, DEN, LAC = (make_team(code) for code in ("KC", "LV", "DEN", "LAC"))
-
-
-def final(home: Team, away: Team, points: tuple[int, int], *, week: int) -> Game:
-    home_points, away_points = points
-    return make_game(home, away, week=week).finalize(
-        Score(home=home_points, away=away_points)
-    )
-
-
-WEEK_ONE = [final(KC, LV, (30, 10), week=1), final(DEN, LAC, (20, 20), week=1)]
 
 
 def test_league_average_counts_each_team_game() -> None:
