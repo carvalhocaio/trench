@@ -7,6 +7,7 @@ from trench import __version__
 from trench.api.errors import register_exception_handlers
 from trench.api.routes import (
     absences,
+    calibration,
     games,
     health,
     highlights,
@@ -38,4 +39,5 @@ def create_app() -> FastAPI:
     app.include_router(absences.router)
     app.include_router(predictions.router)
     app.include_router(highlights.router)
+    app.include_router(calibration.router)
     return app

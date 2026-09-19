@@ -2,12 +2,13 @@ from collections.abc import AsyncIterator
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Query, Request
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from trench.agent.models import build_model
 from trench.agent.preview import AgentPreviewWriter, create_preview_agent
+from trench.application.calibration import CalibrationService
 from trench.application.highlights import HighlightsService
 from trench.application.injuries import InjuryReportService
 from trench.application.predictions import PredictionService
@@ -176,6 +177,47 @@ def get_prediction_service(
 
 
 PredictionServiceDep = Annotated[PredictionService, Depends(get_prediction_service)]
+
+
+def get_calibration_settings(
+    settings: AnalyticsSettingsDep,
+    shrinkage_games: float | None = Query(default=None, gt=0),
+    home_field_advantage: float | None = Query(default=None, ge=-10, le=10),
+    score_margin_stddev: float | None = Query(default=None, gt=0),
+) -> AnalyticsSettings:
+    overrides = {
+        key: value
+        for key, value in (
+            ("shrinkage_games", shrinkage_games),
+            ("home_field_advantage", home_field_advantage),
+            ("score_margin_stddev", score_margin_stddev),
+        )
+        if value is not None
+    }
+    return settings.model_copy(update=overrides) if overrides else settings
+
+
+CalibrationSettingsDep = Annotated[AnalyticsSettings, Depends(get_calibration_settings)]
+
+
+def get_calibration_service(
+    games: GameRepositoryDep,
+    players: PlayerRepositoryDep,
+    absences: AbsenceRepositoryDep,
+    snapshots: SnapshotRepositoryDep,
+    settings: CalibrationSettingsDep,
+) -> CalibrationService:
+    predictions = PredictionService(
+        games=games,
+        players=players,
+        absences=absences,
+        snapshots=snapshots,
+        settings=settings,
+    )
+    return CalibrationService(predictions=predictions, games=games, snapshots=snapshots)
+
+
+CalibrationServiceDep = Annotated[CalibrationService, Depends(get_calibration_service)]
 
 
 def get_highlights_service(

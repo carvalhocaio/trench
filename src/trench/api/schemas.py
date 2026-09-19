@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from uuid import UUID
 
@@ -11,10 +11,12 @@ from pydantic import (
     NonNegativeInt,
 )
 
+from trench.analytics.calibration import CalibrationReport
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
 from trench.application.predictions import GamePrediction
 from trench.application.previews import GamePreview, MatchupPreview
+from trench.config import AnalyticsSettings
 from trench.domain.entities import MAX_WEEK, Score
 from trench.domain.enums import (
     AbsenceStatus,
@@ -272,4 +274,62 @@ class PreviewRead(BaseModel):
         return cls(
             prediction=PredictionRead.from_prediction(game_preview.prediction),
             preview=game_preview.preview,
+        )
+
+
+class ReliabilityBinRead(_Output):
+    lower: float
+    upper: float
+    forecasts: int
+    mean_probability: float
+    observed_rate: float
+
+
+class CalibrationReportRead(_Output):
+    forecasts: int
+    brier_score: float
+    log_loss: float
+    favorite_accuracy: float
+    reliability: list[ReliabilityBinRead]
+
+
+class CalibrationParametersRead(_Output):
+    shrinkage_games: float
+    home_field_advantage: float
+    score_margin_stddev: float
+
+
+class LiveCalibrationRead(BaseModel):
+    model_version: str
+    report: CalibrationReportRead
+
+
+class CalibrationRead(BaseModel):
+    season: int
+    parameters: CalibrationParametersRead
+    backtest: CalibrationReportRead | None
+    live: list[LiveCalibrationRead]
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        season: int,
+        settings: AnalyticsSettings,
+        backtest: CalibrationReport | None,
+        live: Mapping[str, CalibrationReport],
+    ) -> CalibrationRead:
+        return cls(
+            season=season,
+            parameters=CalibrationParametersRead.model_validate(settings),
+            backtest=(
+                CalibrationReportRead.model_validate(backtest) if backtest else None
+            ),
+            live=[
+                LiveCalibrationRead(
+                    model_version=version,
+                    report=CalibrationReportRead.model_validate(report),
+                )
+                for version, report in live.items()
+            ],
         )

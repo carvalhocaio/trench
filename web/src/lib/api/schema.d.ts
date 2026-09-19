@@ -332,6 +332,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/calibration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Calibration */
+        get: operations["get_calibration_calibration_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -371,6 +388,37 @@ export interface components {
          * @enum {string}
          */
         AbsenceStatus: "OUT" | "DOUBTFUL" | "QUESTIONABLE";
+        /** CalibrationParametersRead */
+        CalibrationParametersRead: {
+            /** Shrinkage Games */
+            shrinkage_games: number;
+            /** Home Field Advantage */
+            home_field_advantage: number;
+            /** Score Margin Stddev */
+            score_margin_stddev: number;
+        };
+        /** CalibrationRead */
+        CalibrationRead: {
+            /** Season */
+            season: number;
+            parameters: components["schemas"]["CalibrationParametersRead"];
+            backtest: components["schemas"]["CalibrationReportRead"] | null;
+            /** Live */
+            live: components["schemas"]["LiveCalibrationRead"][];
+        };
+        /** CalibrationReportRead */
+        CalibrationReportRead: {
+            /** Forecasts */
+            forecasts: number;
+            /** Brier Score */
+            brier_score: number;
+            /** Log Loss */
+            log_loss: number;
+            /** Favorite Accuracy */
+            favorite_accuracy: number;
+            /** Reliability */
+            reliability: components["schemas"]["ReliabilityBinRead"][];
+        };
         /**
          * Conference
          * @enum {string}
@@ -459,6 +507,12 @@ export interface components {
             yards_per_carry: components["schemas"]["PlayerSeasonRead"][];
             /** Sacks */
             sacks: components["schemas"]["PlayerSeasonRead"][];
+        };
+        /** LiveCalibrationRead */
+        LiveCalibrationRead: {
+            /** Model Version */
+            model_version: string;
+            report: components["schemas"]["CalibrationReportRead"];
         };
         /** MatchupPreview */
         MatchupPreview: {
@@ -602,6 +656,19 @@ export interface components {
             offense_strength: number;
             /** Defense Strength */
             defense_strength: number;
+        };
+        /** ReliabilityBinRead */
+        ReliabilityBinRead: {
+            /** Lower */
+            lower: number;
+            /** Upper */
+            upper: number;
+            /** Forecasts */
+            forecasts: number;
+            /** Mean Probability */
+            mean_probability: number;
+            /** Observed Rate */
+            observed_rate: number;
         };
         /** ScorePayload */
         ScorePayload: {
@@ -1488,6 +1555,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HighlightsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_calibration_calibration_get: {
+        parameters: {
+            query: {
+                season: number;
+                shrinkage_games?: number | null;
+                home_field_advantage?: number | null;
+                score_margin_stddev?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationRead"];
                 };
             };
             /** @description Validation Error */
