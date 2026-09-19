@@ -1,7 +1,13 @@
-.PHONY: help run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed
+.PHONY: help dev run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed web-install web-dev web-types web-lint web-typecheck web-build
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
+
+dev: db-up ## Starts Postgres, the API and the web app together (Ctrl+C stops both)
+	@trap 'kill 0' EXIT INT TERM; \
+	$(MAKE) run & \
+	$(MAKE) web-dev & \
+	wait
 
 run: ## Starts the API with auto-reload on http://localhost:8000
 	uv run uvicorn trench.api.app:create_app --factory --reload
@@ -70,4 +76,23 @@ migrate-down: ## Reverts the latest migration
 
 seed: ## Seeds the 32 NFL teams (safe to run more than once)
 	uv run trench seed-teams
+
+web-install: ## Installs the web app dependencies with pnpm
+	cd web && pnpm install
+
+web-dev: ## Starts the web app with auto-reload on http://localhost:3000
+	cd web && pnpm dev
+
+web-types: ## Regenerates the web app's API types from the OpenAPI schema
+	uv run trench openapi > web/openapi.json
+	cd web && pnpm run types
+
+web-lint: ## Checks the web app with eslint
+	cd web && pnpm run lint
+
+web-typecheck: ## Runs the Next.js and TypeScript type checks for the web app
+	cd web && pnpm run typecheck
+
+web-build: ## Builds the web app for production
+	cd web && pnpm run build
 

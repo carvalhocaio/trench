@@ -75,3 +75,62 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+
+  web:
+    name: Web Lint, Typecheck and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install Python dependencies
+        run: uv sync --locked
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate API types from the OpenAPI schema
+        run: |
+          uv run trench openapi > web/openapi.json
+          cd web && pnpm run types
+
+      - name: Check generated types are up to date
+        run: git diff --exit-code -- web/src/lib/api/schema.d.ts
+
+      - name: Check web linting
+        working-directory: web
+        run: pnpm run lint
+
+      - name: Check web types
+        working-directory: web
+        run: pnpm run typecheck
+
+      - name: Run web tests
+        working-directory: web
+        run: pnpm test
+
+      - name: Build web app
+        working-directory: web
+        run: pnpm run build
