@@ -165,6 +165,7 @@ def get_prediction_service(
     players: PlayerRepositoryDep,
     absences: AbsenceRepositoryDep,
     snapshots: SnapshotRepositoryDep,
+    team_stats: TeamStatsRepositoryDep,
     settings: AnalyticsSettingsDep,
 ) -> PredictionService:
     return PredictionService(
@@ -172,6 +173,7 @@ def get_prediction_service(
         players=players,
         absences=absences,
         snapshots=snapshots,
+        team_stats=team_stats,
         settings=settings,
     )
 
@@ -184,6 +186,8 @@ def get_calibration_settings(
     shrinkage_games: float | None = Query(default=None, gt=0),
     home_field_advantage: float | None = Query(default=None, ge=-10, le=10),
     score_margin_stddev: float | None = Query(default=None, gt=0),
+    efficiency_weight: float | None = Query(default=None, ge=0),
+    efficiency_shrinkage_games: float | None = Query(default=None, gt=0),
 ) -> AnalyticsSettings:
     overrides = {
         key: value
@@ -191,6 +195,8 @@ def get_calibration_settings(
             ("shrinkage_games", shrinkage_games),
             ("home_field_advantage", home_field_advantage),
             ("score_margin_stddev", score_margin_stddev),
+            ("efficiency_weight", efficiency_weight),
+            ("efficiency_shrinkage_games", efficiency_shrinkage_games),
         )
         if value is not None
     }
@@ -205,6 +211,7 @@ def get_calibration_service(
     players: PlayerRepositoryDep,
     absences: AbsenceRepositoryDep,
     snapshots: SnapshotRepositoryDep,
+    team_stats: TeamStatsRepositoryDep,
     settings: CalibrationSettingsDep,
 ) -> CalibrationService:
     predictions = PredictionService(
@@ -212,6 +219,7 @@ def get_calibration_service(
         players=players,
         absences=absences,
         snapshots=snapshots,
+        team_stats=team_stats,
         settings=settings,
     )
     return CalibrationService(predictions=predictions, games=games, snapshots=snapshots)

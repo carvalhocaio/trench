@@ -89,6 +89,11 @@ class AnalyticsSettings(_EnvSettings):
     shrinkage_games: PositiveFloat = 3.0
     home_field_advantage: float = 1.7
     score_margin_stddev: PositiveFloat = 13.5
+    # Off by default: a nonzero value must first be validated against
+    # GET /calibration (brier score/log loss/reliability, backtest vs. live)
+    # before it's trusted to shift real predictions. See analytics/team_ratings.py.
+    efficiency_weight: NonNegativeFloat = 0.0
+    efficiency_shrinkage_games: PositiveFloat = 3.0
     position_weights: dict[Position, NonNegativeFloat] = Field(
         default_factory=lambda: dict(DEFAULT_POSITION_WEIGHTS)
     )

@@ -8,6 +8,7 @@ from trench.analytics.absences import (
     NO_ADJUSTMENT,
     PointsAdjustment,
     assess_absences,
+    combine,
 )
 from trench.analytics.projection import project_game
 from trench.analytics.ratings import compute_ratings
@@ -114,3 +115,16 @@ def test_missing_quarterback_shifts_win_probability() -> None:
     without_qb = home_probability(assess(absence(KC_QB, AbsenceStatus.OUT)))
 
     assert without_qb < healthy
+
+
+def test_combine_sums_home_and_away_independently() -> None:
+    combined = combine(
+        PointsAdjustment(home=1.0, away=-2.0),
+        PointsAdjustment(home=0.5, away=0.5),
+    )
+
+    assert combined == PointsAdjustment(home=1.5, away=-1.5)
+
+
+def test_combine_with_no_adjustments_is_a_no_op() -> None:
+    assert combine() == NO_ADJUSTMENT

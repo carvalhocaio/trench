@@ -370,6 +370,8 @@ class CalibrationParametersRead(_Output):
     shrinkage_games: float
     home_field_advantage: float
     score_margin_stddev: float
+    efficiency_weight: float
+    efficiency_shrinkage_games: float
 
 
 class LiveCalibrationRead(BaseModel):

@@ -138,12 +138,32 @@ async def test_shrinkage_override_changes_backtest_and_is_echoed_back(
     )
 
 
+async def test_efficiency_weight_override_is_echoed_back(
+    client: AsyncClient, ids: dict[str, str]
+) -> None:
+    default = await client.get("/calibration", params={"season": 2026})
+    overridden = await client.get(
+        "/calibration",
+        params={
+            "season": 2026,
+            "efficiency_weight": 2.5,
+            "efficiency_shrinkage_games": 5,
+        },
+    )
+
+    assert default.json()["parameters"]["efficiency_weight"] == 0.0
+    assert overridden.json()["parameters"]["efficiency_weight"] == 2.5
+    assert overridden.json()["parameters"]["efficiency_shrinkage_games"] == 5
+
+
 @pytest.mark.parametrize(
     "params",
     [
         {"season": 2026, "shrinkage_games": 0},
         {"season": 2026, "home_field_advantage": 11},
         {"season": 2026, "score_margin_stddev": -1},
+        {"season": 2026, "efficiency_weight": -1},
+        {"season": 2026, "efficiency_shrinkage_games": 0},
     ],
 )
 async def test_invalid_parameters_are_rejected(

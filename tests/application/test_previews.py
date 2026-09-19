@@ -110,6 +110,7 @@ async def setup() -> Setup:
             players=players,
             absences=absences,
             snapshots=FakePredictionSnapshotRepository(games),
+            team_stats=team_stats,
             settings=settings,
             clock=lambda: datetime(2026, 9, 16, tzinfo=UTC),
         ),

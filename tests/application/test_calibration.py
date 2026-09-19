@@ -10,6 +10,7 @@ from tests.fakes import (
     FakeGameRepository,
     FakePlayerRepository,
     FakePredictionSnapshotRepository,
+    FakeTeamGameStatsRepository,
 )
 from trench.application.calibration import CalibrationService
 from trench.application.predictions import PredictionService
@@ -35,6 +36,7 @@ async def setup() -> Setup:
         players=FakePlayerRepository(),
         absences=FakeAbsenceRepository(),
         snapshots=snapshots,
+        team_stats=FakeTeamGameStatsRepository(games),
         settings=AnalyticsSettings(_env_file=None),  # pyright: ignore[reportCallIssue]
     )
     return Setup(

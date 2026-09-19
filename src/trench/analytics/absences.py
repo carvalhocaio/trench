@@ -15,6 +15,13 @@ class PointsAdjustment:
 NO_ADJUSTMENT = PointsAdjustment()
 
 
+def combine(*adjustments: PointsAdjustment) -> PointsAdjustment:
+    return PointsAdjustment(
+        home=sum(adjustment.home for adjustment in adjustments),
+        away=sum(adjustment.away for adjustment in adjustments),
+    )
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AbsenceImpact:
     player: Player

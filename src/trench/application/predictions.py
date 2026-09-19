@@ -3,10 +3,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from trench.analytics.absences import AbsenceReport, assess_absences
+from trench.analytics.absences import (
+    NO_ADJUSTMENT,
+    AbsenceReport,
+    PointsAdjustment,
+    assess_absences,
+    combine,
+)
 from trench.analytics.errors import InsufficientDataError
 from trench.analytics.projection import Projection, project_game
 from trench.analytics.ratings import TeamRating, compute_ratings
+from trench.analytics.team_ratings import assess_efficiency, compute_efficiency_ratings
 from trench.application.clock import Clock, utc_now
 from trench.application.lookups import require_game
 from trench.config import AnalyticsSettings
@@ -17,8 +24,12 @@ from trench.domain.repositories import (
     GameRepository,
     PlayerRepository,
     PredictionSnapshotRepository,
+    TeamGameStatsRepository,
 )
 
+# Bump this the moment AnalyticsSettings.efficiency_weight's default stops
+# being 0.0, so /calibration's live() view doesn't mix snapshots computed
+# under different formulas into the same model_version bucket.
 MODEL_VERSION = "0.1.0"
 
 
@@ -50,6 +61,7 @@ class PredictionService:
         players: PlayerRepository,
         absences: AbsenceRepository,
         snapshots: PredictionSnapshotRepository,
+        team_stats: TeamGameStatsRepository,
         settings: AnalyticsSettings,
         clock: Clock = utc_now,
     ) -> None:
@@ -57,6 +69,7 @@ class PredictionService:
         self._players = players
         self._absences = absences
         self._snapshots = snapshots
+        self._team_stats = team_stats
         self._settings = settings
         self._clock = clock
 
@@ -108,13 +121,14 @@ class PredictionService:
             position_weights=self._settings.position_weights,
             absence_probabilities=self._settings.absence_probabilities,
         )
+        efficiency_adjustment = await self._assess_efficiency(game, previous_games)
         projection = project_game(
             ratings,
             home_team_id=game.home_team_id,
             away_team_id=game.away_team_id,
             home_field_advantage=self._settings.home_field_advantage,
             score_margin_stddev=self._settings.score_margin_stddev,
-            adjustment=report.adjustment,
+            adjustment=combine(report.adjustment, efficiency_adjustment),
         )
         return GamePrediction(
             game=game,
@@ -124,6 +138,29 @@ class PredictionService:
             projection=projection,
             as_of=self._clock(),
         )
+
+    async def _assess_efficiency(
+        self, game: Game, previous_games: Sequence[Game]
+    ) -> PointsAdjustment:
+        weight = self._settings.efficiency_weight
+        if weight == 0.0:
+            return NO_ADJUSTMENT
+
+        previous_game_ids = {previous.id for previous in previous_games}
+        team_stats = [
+            stats
+            for stats in await self._team_stats.list_by_season(game.season)
+            if stats.game_id in previous_game_ids
+        ]
+        try:
+            ratings = compute_efficiency_ratings(
+                previous_games,
+                team_stats,
+                shrinkage_games=self._settings.efficiency_shrinkage_games,
+            )
+        except InsufficientDataError:
+            return NO_ADJUSTMENT
+        return assess_efficiency(game, ratings, weight=weight)
 
     async def _rosters(self, game: Game) -> dict[UUID, Player]:
         return {
