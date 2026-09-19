@@ -2,8 +2,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, status
 
-from trench.api.dependencies import PredictionServiceDep
-from trench.api.schemas import PredictionRead, SnapshotRead
+from trench.api.dependencies import PredictionServiceDep, PreviewServiceDep
+from trench.api.schemas import PredictionRead, PreviewRead, SnapshotRead
 from trench.domain.entities import MAX_WEEK
 
 router = APIRouter(tags=["predictions"])
@@ -39,3 +39,8 @@ async def prediction_history(
 ) -> list[SnapshotRead]:
     snapshots = await predictions.history(game_id)
     return [SnapshotRead.model_validate(snapshot) for snapshot in snapshots]
+
+
+@router.get("/games/{game_id}/preview")
+async def preview_game(game_id: UUID, previews: PreviewServiceDep) -> PreviewRead:
+    return PreviewRead.from_preview(await previews.preview(game_id))

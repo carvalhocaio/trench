@@ -13,6 +13,7 @@ from pydantic import (
 
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
+from trench.application.previews import GamePreview, MatchupPreview
 from trench.application.predictions import GamePrediction
 from trench.domain.entities import MAX_WEEK, Score
 from trench.domain.enums import (
@@ -254,4 +255,16 @@ class HighlightsRead(BaseModel):
             passing_touchdowns=rows(leaders.passing_touchdowns),
             yards_per_carry=rows(leaders.yards_per_carry),
             sacks=rows(leaders.sacks),
+        )
+
+
+class PreviewRead(BaseModel):
+    prediction: PredictionRead
+    preview: MatchupPreview
+
+    @classmethod
+    def from_preview(cls, game_preview: GamePreview) -> PreviewRead:
+        return cls(
+            prediction=PredictionRead.from_prediction(game_preview.prediction),
+            preview=game_preview.preview,
         )

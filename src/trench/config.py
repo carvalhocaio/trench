@@ -72,6 +72,7 @@ class LLMSettings(_EnvSettings):
 
     model: str = "google:gemini-3.8-flash"
     api_key: SecretStr = Field(validation_alias="GOOGLE_API_KEY")
+    language: str = "pt-BR"
 
 
 class AnalyticsSettings(_EnvSettings):

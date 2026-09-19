@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from trench.config import get_database_settings
 from trench.infrastructure.models import Base
+from pydantic_ai import models
 
 TEST_DATABASE_SUFFIX = "_test"
-
+models.ALLOW_MODEL_REQUESTS = False
 
 async def _prepare_database(url: URL) -> None:
     maintenance = create_async_engine(

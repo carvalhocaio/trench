@@ -1,9 +1,22 @@
 from typing import Any
 
 import pytest
+from fastapi import FastAPI
 from httpx import AsyncClient
 
+from tests.agent.samples import GROUNDED
 from tests.api.payloads import KANSAS_CITY
+from trench.api.dependencies import get_preview_writer
+from trench.application.previews import (
+    MatchupContext,
+    MatchupPreview,
+    PreviewUnavailableError,
+)
+
+
+class FailingWriter:
+    async def write(self, context: MatchupContext) -> MatchupPreview:
+        raise PreviewUnavailableError("model timed out")
 
 
 async def post(client: AsyncClient, url: str, payload: dict[str, Any]) -> str:
@@ -121,3 +134,24 @@ async def test_season_opener_has_insufficient_data(
     response = await client.get(f"/games/{ids['opener']}/prediction")
 
     assert response.status_code == 409
+
+
+async def test_preview_pairs_prediction_with_narrative(
+    client: AsyncClient, ids: dict[str, str]
+) -> None:
+    response = await client.get(f"/games/{ids['rematch']}/preview")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["preview"]["headline"] == GROUNDED.headline
+    assert body["prediction"]["game"]["id"] == ids["rematch"]
+
+
+async def test_preview_unavailable_when_model_fails(
+    app: FastAPI, client: AsyncClient, ids: dict[str, str]
+) -> None:
+    app.dependency_overrides[get_preview_writer] = FailingWriter
+
+    response = await client.get(f"/games/{ids['rematch']}/preview")
+
+    assert response.status_code == 503

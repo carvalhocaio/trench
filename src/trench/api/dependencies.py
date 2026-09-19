@@ -4,13 +4,25 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from functools import lru_cache
+
+from pydantic import ValidationError
+
+from trench.agent.models import build_model
+from trench.agent.preview import AgentPreviewWriter, create_preview_agent
+from trench.application.previews import (
+    PreviewService,
+    PreviewUnavailableError,
+    PreviewWriter,
+)
+
 from trench.application.highlights import HighlightsService
 from trench.application.injuries import InjuryReportService
 from trench.application.predictions import PredictionService
 from trench.application.roster import RosterService
 from trench.application.schedule import ScheduleService
 from trench.application.stats import GameStatsService
-from trench.config import AnalyticsSettings, get_analytics_settings
+from trench.config import AnalyticsSettings, get_analytics_settings, get_llm_settings
 from trench.domain.repositories import (
     AbsenceRepository,
     GameRepository,
@@ -177,3 +189,32 @@ def get_highlights_service(
 
 
 HighlightsServiceDep = Annotated[HighlightsService, Depends(get_highlights_service)]
+
+
+@lru_cache
+def get_preview_writer() -> PreviewWriter:
+    try:
+        settings = get_llm_settings()
+    except ValidationError as error:
+        raise PreviewUnavailableError(
+            "LLM is not configured: set GOOGLE_API_KEY"
+        ) from error
+    agent = create_preview_agent(build_model(settings), language=settings.language)
+    return AgentPreviewWriter(agent)
+
+
+PreviewWriterDep = Annotated[PreviewWriter, Depends(get_preview_writer)]
+
+
+def get_preview_service(
+    predictions: PredictionServiceDep,
+    highlights: HighlightsServiceDep,
+    teams: TeamRepositoryDep,
+    writer: PreviewWriterDep,
+) -> PreviewService:
+    return PreviewService(
+        predictions=predictions, highlights=highlights, teams=teams, writer=writer
+    )
+
+
+PreviewServiceDep = Annotated[PreviewService, Depends(get_preview_service)]

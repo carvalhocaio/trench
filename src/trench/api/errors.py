@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from trench.analytics.errors import InsufficientDataError
+from trench.application.previews import PreviewUnavailableError
 from trench.application.errors import (
     NotFoundError,
     ScheduleConflictError,
@@ -20,6 +21,7 @@ STATUS_BY_ERROR: dict[type[Exception], int] = {
     NotFoundError: status.HTTP_404_NOT_FOUND,
     ScheduleConflictError: status.HTTP_409_CONFLICT,
     InsufficientDataError: status.HTTP_409_CONFLICT,
+    PreviewUnavailableError: status.HTTP_503_SERVICE_UNAVAILABLE,
 }
 
 
