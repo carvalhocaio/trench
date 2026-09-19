@@ -5,12 +5,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from trench.analytics.errors import InsufficientDataError
-from trench.application.previews import PreviewUnavailableError
 from trench.application.errors import (
     NotFoundError,
     ScheduleConflictError,
     TeamNotInGameError,
 )
+from trench.application.previews import PreviewUnavailableError
 from trench.domain.errors import DomainValidationError
 
 type ExceptionHandler = Callable[[Request, Exception], Awaitable[JSONResponse]]

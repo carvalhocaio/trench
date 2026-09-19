@@ -1,24 +1,21 @@
 from collections.abc import AsyncIterator
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, Request
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
-from functools import lru_cache
-
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from trench.agent.models import build_model
 from trench.agent.preview import AgentPreviewWriter, create_preview_agent
+from trench.application.highlights import HighlightsService
+from trench.application.injuries import InjuryReportService
+from trench.application.predictions import PredictionService
 from trench.application.previews import (
     PreviewService,
     PreviewUnavailableError,
     PreviewWriter,
 )
-
-from trench.application.highlights import HighlightsService
-from trench.application.injuries import InjuryReportService
-from trench.application.predictions import PredictionService
 from trench.application.roster import RosterService
 from trench.application.schedule import ScheduleService
 from trench.application.stats import GameStatsService

@@ -13,8 +13,8 @@ from pydantic import (
 
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
-from trench.application.previews import GamePreview, MatchupPreview
 from trench.application.predictions import GamePrediction
+from trench.application.previews import GamePreview, MatchupPreview
 from trench.domain.entities import MAX_WEEK, Score
 from trench.domain.enums import (
     AbsenceStatus,
