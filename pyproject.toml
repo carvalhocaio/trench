@@ -34,7 +34,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+target-version = "py314"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -64,7 +64,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
 strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
