@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy import Table
+from sqlalchemy import DateTime, Table
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.schema import CreateTable
 
@@ -23,6 +23,7 @@ def test_every_constraint_is_named(table: Table) -> None:
 
 
 def test_timestamps_are_timezone_aware() -> None:
-    kickoff = Base.metadata.tables["games"].c.kickoff
+    kickoff_type = Base.metadata.tables["games"].c.kickoff.type
 
-    assert kickoff.type.timezone is True
+    assert isinstance(kickoff_type, DateTime)
+    assert kickoff_type.timezone is True

@@ -1,11 +1,19 @@
 from typing import Protocol
 from uuid import UUID
 
-from trench.domain.entities import Game, Team
+from trench.domain.entities import (
+    Absence,
+    Game,
+    Player,
+    PlayerGameStats,
+    PredictionSnapshot,
+    Team,
+    TeamGameStats,
+)
 
 
 class TeamRepository(Protocol):
-    async def save(self, team: Team) -> None: ...
+    async def save(self, team: Team, /) -> None: ...
 
     async def get(self, team_id: UUID) -> Team | None: ...
 
@@ -15,7 +23,7 @@ class TeamRepository(Protocol):
 
 
 class GameRepository(Protocol):
-    async def save(self, game: Game) -> None: ...
+    async def save(self, game: Game, /) -> None: ...
 
     async def get(self, game_id: UUID) -> Game | None: ...
 
@@ -24,3 +32,39 @@ class GameRepository(Protocol):
     ) -> list[Game]: ...
 
     async def list_by_team(self, team_id: UUID, season: int) -> list[Game]: ...
+
+
+class PlayerRepository(Protocol):
+    async def save(self, player: Player, /) -> None: ...
+
+    async def get(self, player_id: UUID) -> Player | None: ...
+
+    async def list_by_team(self, team_id: UUID) -> list[Player]: ...
+
+
+class TeamGameStatsRepository(Protocol):
+    async def save(self, stats: TeamGameStats, /) -> None: ...
+
+    async def list_by_season(self, season: int) -> list[TeamGameStats]: ...
+
+
+class PlayerGameStatsRepository(Protocol):
+    async def save(self, stats: PlayerGameStats, /) -> None: ...
+
+    async def list_by_season(self, season: int) -> list[PlayerGameStats]: ...
+
+
+class AbsenceRepository(Protocol):
+    async def save(self, absence: Absence, /) -> None: ...
+
+    async def remove(self, game_id: UUID, player_id: UUID) -> None: ...
+
+    async def list_by_game(self, game_id: UUID) -> list[Absence]: ...
+
+
+class PredictionSnapshotRepository(Protocol):
+    async def save(self, snapshot: PredictionSnapshot, /) -> None: ...
+
+    async def list_by_game(self, game_id: UUID) -> list[PredictionSnapshot]: ...
+
+    async def list_by_season(self, season: int) -> list[PredictionSnapshot]: ...

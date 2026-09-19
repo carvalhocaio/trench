@@ -67,8 +67,11 @@ line-ending = "auto"
 python_version = "3.14"
 strict = true
 plugins = ["pydantic.mypy"]
-mypy_path = "src"
-packages = ["trench"]
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_calls = false
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

@@ -29,7 +29,7 @@ format: ## Formats code with ruff
 format-check: ## Verifies formatting with ruff without modifying files
 	uv run ruff format --check .
 
-typecheck: ## Runs mypy in strict mode over the package
+typecheck: ## Runs mypy in strict mode over source and tests
 	uv run mypy
 
 audit: ## Audits dependencies for known security vulnerabilities
