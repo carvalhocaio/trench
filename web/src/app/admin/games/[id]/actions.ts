@@ -16,7 +16,7 @@ function revalidateGame(gameId: string): void {
 
 export async function recordScoreAction(
   gameId: string,
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
@@ -39,7 +39,7 @@ export async function recordScoreAction(
 export async function recordTeamStatsAction(
   gameId: string,
   teamId: string,
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
@@ -64,7 +64,7 @@ export async function recordTeamStatsAction(
 
 export async function recordPlayerStatsAction(
   gameId: string,
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const playerId = String(formData.get("player_id") ?? "");
@@ -89,7 +89,7 @@ export async function recordPlayerStatsAction(
 
 export async function reportAbsenceAction(
   gameId: string,
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const playerId = String(formData.get("player_id") ?? "");
@@ -108,9 +108,20 @@ export async function reportAbsenceAction(
   return SUCCESS_STATE;
 }
 
-export async function clearAbsenceAction(gameId: string, playerId: string): Promise<void> {
-  await api.DELETE("/games/{game_id}/absences/{player_id}", {
-    params: { path: { game_id: gameId, player_id: playerId } },
-  });
+export async function clearAbsenceAction(
+  gameId: string,
+  playerId: string,
+  _previousState: FormState,
+): Promise<FormState> {
+  try {
+    unwrap(
+      await api.DELETE("/games/{game_id}/absences/{player_id}", {
+        params: { path: { game_id: gameId, player_id: playerId } },
+      }),
+    );
+  } catch (error) {
+    return apiErrorToFormState(error);
+  }
   revalidateGame(gameId);
+  return SUCCESS_STATE;
 }

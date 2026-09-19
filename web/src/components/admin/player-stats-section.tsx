@@ -102,7 +102,8 @@ export function PlayerStatsSection({
             id="passing_touchdowns"
             name="passing_touchdowns"
             min={0}
-            defaultValue={editingLine?.passing_touchdowns ?? 0}
+            placeholder="0"
+            defaultValue={editingLine?.passing_touchdowns}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -116,7 +117,8 @@ export function PlayerStatsSection({
             id="rushing_attempts"
             name="rushing_attempts"
             min={0}
-            defaultValue={editingLine?.rushing_attempts ?? 0}
+            placeholder="0"
+            defaultValue={editingLine?.rushing_attempts}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -129,7 +131,8 @@ export function PlayerStatsSection({
             type="number"
             id="rushing_yards"
             name="rushing_yards"
-            defaultValue={editingLine?.rushing_yards ?? 0}
+            placeholder="0"
+            defaultValue={editingLine?.rushing_yards}
             className={FIELD_CLASS}
           />
         </FormField>
@@ -140,7 +143,8 @@ export function PlayerStatsSection({
             name="sacks"
             min={0}
             step={0.5}
-            defaultValue={editingLine?.sacks ?? 0}
+            placeholder="0"
+            defaultValue={editingLine?.sacks}
             className={FIELD_CLASS}
           />
         </FormField>

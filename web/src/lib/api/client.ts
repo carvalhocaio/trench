@@ -28,8 +28,8 @@ type ApiResponse<T> = {
 };
 
 export function unwrap<T>({ data, error, response }: ApiResponse<T>): T {
-  if (data !== undefined) {
-    return data;
+  if (response.ok) {
+    return data as T;
   }
   const detail =
     error && typeof error === "object" && "detail" in error

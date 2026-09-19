@@ -9,7 +9,7 @@ import { TIMEZONE } from "@/lib/format";
 import { toZonedOffsetISOString } from "@/lib/timezone";
 
 export async function scheduleGameAction(
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const kickoffLocal = String(formData.get("kickoff") ?? "");

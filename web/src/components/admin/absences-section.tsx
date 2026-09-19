@@ -12,11 +12,21 @@ import type { AbsenceRead, AbsenceStatus, PlayerRead } from "@/lib/api/types";
 const STATUS_OPTIONS = Object.keys(ABSENCE_STATUS_LABELS) as AbsenceStatus[];
 
 function ClearAbsenceButton({ gameId, playerId }: { gameId: string; playerId: string }) {
+  const [state, formAction, pending] = useActionState(
+    clearAbsenceAction.bind(null, gameId, playerId),
+    initialFormState,
+  );
+
   return (
-    <form action={clearAbsenceAction.bind(null, gameId, playerId)}>
-      <button type="submit" className="text-sm text-nfl-red hover:underline">
-        Remover
+    <form action={formAction} className="flex flex-col items-end gap-1">
+      <button
+        type="submit"
+        disabled={pending}
+        className="text-sm text-nfl-red hover:underline disabled:opacity-50"
+      >
+        {pending ? "Removendo…" : "Remover"}
       </button>
+      {state.formError && <p className="text-xs text-nfl-red">{state.formError}</p>}
     </form>
   );
 }

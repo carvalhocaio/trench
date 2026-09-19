@@ -26,7 +26,7 @@ function revalidatePlayers(): void {
 }
 
 export async function registerPlayerAction(
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
@@ -40,7 +40,7 @@ export async function registerPlayerAction(
 
 export async function updatePlayerAction(
   playerId: string,
-  previousState: FormState,
+  _previousState: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
