@@ -4,7 +4,9 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from trench.domain.repositories import TeamRepository
+from trench.application.schedule import ScheduleService
+from trench.domain.repositories import GameRepository, TeamRepository
+from trench.infrastructure.repositories.games import SqlGameRepository
 from trench.infrastructure.repositories.teams import SqlTeamRepository
 
 
@@ -24,3 +26,19 @@ def get_team_repository(session: SessionDep) -> TeamRepository:
 
 
 TeamRepositoryDep = Annotated[TeamRepository, Depends(get_team_repository)]
+
+
+def get_game_repository(session: SessionDep) -> GameRepository:
+    return SqlGameRepository(session)
+
+
+GameRepositoryDep = Annotated[GameRepository, Depends(get_game_repository)]
+
+
+def get_schedule_service(
+    teams: TeamRepositoryDep, games: GameRepositoryDep
+) -> ScheduleService:
+    return ScheduleService(teams=teams, games=games)
+
+
+ScheduleServiceDep = Annotated[ScheduleService, Depends(get_schedule_service)]

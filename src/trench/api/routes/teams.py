@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from trench.api.dependencies import TeamRepositoryDep
 from trench.api.schemas import TeamCreate, TeamRead
+from trench.application.errors import TeamNotFoundError
 from trench.domain.entities import Team
 
 router = APIRouter(prefix="/teams", tags=["teams"])
@@ -25,5 +26,5 @@ async def list_teams(teams: TeamRepositoryDep) -> list[TeamRead]:
 async def get_team(team_id: UUID, teams: TeamRepositoryDep) -> TeamRead:
     team = await teams.get(team_id)
     if team is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, f"team {team_id} not found")
+        raise TeamNotFoundError(team_id)
     return TeamRead.model_validate(team)

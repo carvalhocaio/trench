@@ -2,12 +2,7 @@ from uuid import uuid7
 
 from httpx import AsyncClient
 
-KANSAS_CITY = {
-    "name": "Kansas City Chiefs",
-    "abbreviation": "KC",
-    "conference": "AFC",
-    "division": "WEST",
-}
+from tests.api.payloads import KANSAS_CITY
 
 
 async def test_health(client: AsyncClient) -> None:

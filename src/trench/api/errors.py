@@ -5,14 +5,15 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from trench.analytics.errors import InsufficientDataError
-from trench.application.errors import GameNotFoundError
+from trench.application.errors import NotFoundError, ScheduleConflictError
 from trench.domain.errors import DomainValidationError
 
 type ExceptionHandler = Callable[[Request, Exception], Awaitable[JSONResponse]]
 
 STATUS_BY_ERROR: dict[type[Exception], int] = {
     DomainValidationError: status.HTTP_422_UNPROCESSABLE_CONTENT,
-    GameNotFoundError: status.HTTP_404_NOT_FOUND,
+    NotFoundError: status.HTTP_404_NOT_FOUND,
+    ScheduleConflictError: status.HTTP_409_CONFLICT,
     InsufficientDataError: status.HTTP_409_CONFLICT,
 }
 
