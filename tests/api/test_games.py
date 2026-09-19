@@ -93,7 +93,7 @@ async def test_same_team_on_both_sides_is_unprocessable(
 
 @pytest.mark.parametrize(
     "override",
-    [{"kickoff": "2026-09-20T17:00:00"}, {"week": 23}, {"score": {"home": 1}}],
+    [{"kickoff": "2026-09-20T17:00:00"}, {"week": 19}, {"score": {"home": 1}}],
 )
 async def test_rejects_invalid_game_payload(
     client: AsyncClient, teams: dict[str, str], override: dict[str, Any]

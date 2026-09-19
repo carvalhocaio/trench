@@ -11,7 +11,7 @@ from trench.domain.enums import (
 )
 from trench.domain.errors import DomainValidationError
 
-MAX_WEEK = 22
+MAX_WEEK = 18
 
 
 def _require_non_negative(**values: float) -> None:

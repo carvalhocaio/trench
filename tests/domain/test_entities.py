@@ -67,7 +67,7 @@ class TestGame:
         "overrides",
         [
             {"week": 0},
-            {"week": 23},
+            {"week": 19},
             {"kickoff": datetime(2026, 9, 20, 17, 0)},
         ],
     )
