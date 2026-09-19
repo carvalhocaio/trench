@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from trench.application.clock import Clock, utc_now
 from trench.application.errors import ScheduleConflictError
 from trench.application.lookups import require_game, require_team
 from trench.domain.entities import Game, Score
@@ -8,9 +9,12 @@ from trench.domain.repositories import GameRepository, TeamRepository
 
 
 class ScheduleService:
-    def __init__(self, *, teams: TeamRepository, games: GameRepository) -> None:
+    def __init__(
+        self, *, teams: TeamRepository, games: GameRepository, clock: Clock = utc_now
+    ) -> None:
         self._teams = teams
         self._games = games
+        self._clock = clock
 
     async def schedule(
         self,
@@ -35,7 +39,7 @@ class ScheduleService:
         return game
 
     async def record_score(self, game_id: UUID, score: Score) -> Game:
-        game = (await self.get(game_id)).finalize(score)
+        game = (await self.get(game_id)).finalize(score, at=self._clock())
         await self._games.save(game)
         return game
 

@@ -1,5 +1,5 @@
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid7
 
@@ -13,7 +13,7 @@ from trench.domain.entities import (
     TeamGameStats,
 )
 from trench.domain.enums import GameStatus
-from trench.domain.errors import DomainValidationError
+from trench.domain.errors import DomainValidationError, GameNotStartedError
 
 KICKOFF = datetime(2026, 9, 20, 17, 0, tzinfo=UTC)
 
@@ -33,9 +33,33 @@ class TestGame:
     def test_scheduled_until_finalized(self) -> None:
         game = make_game()
 
-        final = game.finalize(Score(home=27, away=20))
+        final = game.finalize(Score(home=27, away=20), at=game.kickoff)
 
         assert game.status is GameStatus.SCHEDULED
+        assert final.status is GameStatus.FINAL
+
+    def test_finalize_rejects_before_kickoff(self) -> None:
+        game = make_game()
+
+        with pytest.raises(GameNotStartedError):
+            game.finalize(
+                Score(home=27, away=20), at=game.kickoff - timedelta(seconds=1)
+            )
+
+    def test_finalize_allows_at_kickoff(self) -> None:
+        game = make_game()
+
+        final = game.finalize(Score(home=27, away=20), at=game.kickoff)
+
+        assert final.status is GameStatus.FINAL
+
+    def test_finalize_allows_after_kickoff(self) -> None:
+        game = make_game()
+
+        final = game.finalize(
+            Score(home=27, away=20), at=game.kickoff + timedelta(hours=3)
+        )
+
         assert final.status is GameStatus.FINAL
 
     def test_points_from_each_side(self) -> None:

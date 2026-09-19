@@ -28,7 +28,7 @@ async def ids(client: AsyncClient) -> dict[str, str]:
         json={
             "season": 2026,
             "week": 3,
-            "kickoff": "2026-09-20T17:00:00+00:00",
+            "kickoff": "2026-09-10T17:00:00+00:00",
             "home_team_id": teams["KC"],
             "away_team_id": teams["LV"],
         },
@@ -46,6 +46,22 @@ async def register(
     assert response.status_code == 201
     player: dict[str, Any] = response.json()
     return player
+
+
+@pytest.fixture
+async def future_game(client: AsyncClient, ids: dict[str, str]) -> str:
+    game = await client.post(
+        "/games",
+        json={
+            "season": 2026,
+            "week": 4,
+            "kickoff": "2099-09-10T17:00:00+00:00",
+            "home_team_id": ids["KC"],
+            "away_team_id": ids["LV"],
+        },
+    )
+    game_id: str = game.json()["id"]
+    return game_id
 
 
 async def test_roster_lists_and_trades_players(
@@ -105,6 +121,29 @@ async def test_rejects_invalid_sacks(
     )
 
     assert response.status_code == 422
+
+
+async def test_team_stats_before_kickoff_is_rejected(
+    client: AsyncClient, ids: dict[str, str], future_game: str
+) -> None:
+    response = await client.put(
+        f"/games/{future_game}/team-stats/{ids['KC']}", json=TEAM_STATS
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "game_not_started"
+
+
+async def test_player_stats_before_kickoff_is_rejected(
+    client: AsyncClient, ids: dict[str, str], future_game: str
+) -> None:
+    response = await client.put(
+        f"/games/{future_game}/player-stats/{ids['runner']}",
+        json={"rushing_attempts": 1},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "game_not_started"
 
 
 async def test_player_stats_for_unknown_player(

@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from trench.application.clock import Clock, utc_now
 from trench.application.lookups import (
     require_game,
     require_participant,
     require_player,
 )
-from trench.domain.entities import PlayerGameStats, TeamGameStats
+from trench.domain.entities import Game, PlayerGameStats, TeamGameStats
+from trench.domain.errors import GameNotStartedError
 from trench.domain.repositories import (
     GameRepository,
     PlayerGameStatsRepository,
@@ -29,11 +31,13 @@ class GameStatsService:
         players: PlayerRepository,
         team_stats: TeamGameStatsRepository,
         player_stats: PlayerGameStatsRepository,
+        clock: Clock = utc_now,
     ) -> None:
         self._games = games
         self._players = players
         self._team_stats = team_stats
         self._player_stats = player_stats
+        self._clock = clock
 
     async def of_game(self, game_id: UUID) -> GameStats:
         game = await require_game(self._games, game_id)
@@ -45,6 +49,7 @@ class GameStatsService:
     async def record_team_stats(self, stats: TeamGameStats) -> TeamGameStats:
         game = await require_game(self._games, stats.game_id)
         require_participant(game, stats.team_id)
+        self._require_started(game)
         await self._team_stats.save(stats)
         return stats
 
@@ -61,6 +66,7 @@ class GameStatsService:
         game = await require_game(self._games, game_id)
         player = await require_player(self._players, player_id)
         require_participant(game, player.team_id)
+        self._require_started(game)
         stats = PlayerGameStats(
             game_id=game.id,
             player_id=player.id,
@@ -72,3 +78,8 @@ class GameStatsService:
         )
         await self._player_stats.save(stats)
         return stats
+
+    def _require_started(self, game: Game) -> None:
+        at = self._clock()
+        if not game.has_started(at):
+            raise GameNotStartedError(game.id, game.kickoff)

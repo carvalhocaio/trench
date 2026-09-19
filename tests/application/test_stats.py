@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import timedelta
 from uuid import UUID, uuid7
 
 import pytest
@@ -19,10 +20,12 @@ from trench.application.errors import (
 from trench.application.stats import GameStatsService
 from trench.domain.entities import Game, TeamGameStats
 from trench.domain.enums import Position
+from trench.domain.errors import GameNotStartedError
 
 GAME = make_game(KC, LV)
 RUNNER = make_player(KC, Position.RB, "Runner")
 OUTSIDER = make_player(DEN, Position.QB, "Outsider")
+AFTER_KICKOFF = GAME.kickoff + timedelta(hours=3)
 
 
 @dataclass(frozen=True)
@@ -47,6 +50,7 @@ async def setup() -> Setup:
             players=players,
             team_stats=team_stats,
             player_stats=player_stats,
+            clock=lambda: AFTER_KICKOFF,
         ),
         team_stats=team_stats,
         player_stats=player_stats,
@@ -79,6 +83,13 @@ async def test_team_stats_require_participant(setup: Setup) -> None:
 async def test_team_stats_require_known_game(setup: Setup) -> None:
     with pytest.raises(GameNotFoundError):
         await setup.service.record_team_stats(team_stats(make_game(KC, DEN)))
+
+
+async def test_team_stats_before_kickoff_is_rejected() -> None:
+    service = await _service_before_kickoff()
+
+    with pytest.raises(GameNotStartedError):
+        await service.record_team_stats(team_stats())
 
 
 async def test_player_stats_take_the_players_team(setup: Setup) -> None:
@@ -117,6 +128,34 @@ async def test_player_stats_require_known_player(setup: Setup) -> None:
             rushing_yards=0,
             sacks=0.0,
         )
+
+
+async def test_player_stats_before_kickoff_is_rejected() -> None:
+    service = await _service_before_kickoff()
+
+    with pytest.raises(GameNotStartedError):
+        await service.record_player_stats(
+            game_id=GAME.id,
+            player_id=RUNNER.id,
+            passing_touchdowns=0,
+            rushing_attempts=1,
+            rushing_yards=1,
+            sacks=0.0,
+        )
+
+
+async def _service_before_kickoff() -> GameStatsService:
+    games = FakeGameRepository()
+    await games.save(GAME)
+    players = FakePlayerRepository()
+    await players.save(RUNNER)
+    return GameStatsService(
+        games=games,
+        players=players,
+        team_stats=FakeTeamGameStatsRepository(games),
+        player_stats=FakePlayerGameStatsRepository(games),
+        clock=lambda: GAME.kickoff - timedelta(hours=1),
+    )
 
 
 async def test_lists_stats_of_a_game(setup: Setup) -> None:

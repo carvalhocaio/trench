@@ -1,9 +1,13 @@
 from typing import Any
+from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.api.payloads import KANSAS_CITY
+from trench.domain.entities import Score
+from trench.infrastructure.repositories.games import SqlGameRepository
 
 
 async def post(client: AsyncClient, url: str, payload: dict[str, Any]) -> str:
@@ -74,7 +78,7 @@ async def test_backtest_evaluates_games_from_two_weeks(
 
 
 async def test_live_view_counts_only_the_last_snapshot_before_kickoff(
-    client: AsyncClient,
+    client: AsyncClient, session: AsyncSession
 ) -> None:
     kc = await post(client, "/teams", KANSAS_CITY | {"abbreviation": "KC"})
     lv = await post(client, "/teams", KANSAS_CITY | {"abbreviation": "LV"})
@@ -87,12 +91,15 @@ async def test_live_view_counts_only_the_last_snapshot_before_kickoff(
         client, "/games", game(den, lac, 1, "2026-09-10T20:20:00-04:00")
     )
     await client.put(f"/games/{history}/score", json={"home": 24, "away": 17})
+    # The kickoff must stay in the far future so both snapshots below count as
+    # "before kickoff". The score is finalized straight through the
+    # repository, at a time past that kickoff, since the API itself can only
+    # finalize a game once its real kickoff has passed.
     matchup = await post(client, "/games", game(kc, lv, 2, "2099-09-10T20:20:00-04:00"))
 
     first = await client.post(f"/games/{matchup}/prediction")
     await client.put(f"/games/{matchup}/absences/{quarterback}", json={"status": "OUT"})
     second = await client.post(f"/games/{matchup}/prediction")
-    await client.put(f"/games/{matchup}/score", json={"home": 27, "away": 20})
 
     assert first.status_code == 201, first.text
     assert second.status_code == 201, second.text
@@ -100,6 +107,12 @@ async def test_live_view_counts_only_the_last_snapshot_before_kickoff(
         first.json()["home"]["win_probability"]
         != second.json()["home"]["win_probability"]
     )
+
+    games = SqlGameRepository(session)
+    stored_game = await games.get(UUID(matchup))
+    assert stored_game is not None
+    finalized = stored_game.finalize(Score(home=27, away=20), at=stored_game.kickoff)
+    await games.save(finalized)
 
     response = await client.get("/calibration", params={"season": 2026})
 

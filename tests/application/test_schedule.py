@@ -1,3 +1,4 @@
+from datetime import timedelta
 from uuid import uuid7
 
 import pytest
@@ -13,7 +14,9 @@ from trench.application.errors import (
 from trench.application.schedule import ScheduleService
 from trench.domain.entities import Game, Score, Team
 from trench.domain.enums import GameStatus
-from trench.domain.errors import DomainValidationError
+from trench.domain.errors import DomainValidationError, GameNotStartedError
+
+AFTER_KICKOFF = SEASON_OPENER + timedelta(hours=3)
 
 
 @pytest.fixture
@@ -21,7 +24,9 @@ async def schedule() -> ScheduleService:
     teams = FakeTeamRepository()
     for team in (KC, LV, DEN, LAC):
         await teams.save(team)
-    return ScheduleService(teams=teams, games=FakeGameRepository())
+    return ScheduleService(
+        teams=teams, games=FakeGameRepository(), clock=lambda: AFTER_KICKOFF
+    )
 
 
 async def book(
@@ -86,6 +91,21 @@ async def test_records_and_corrects_score(schedule: ScheduleService) -> None:
 async def test_record_score_of_unknown_game(schedule: ScheduleService) -> None:
     with pytest.raises(GameNotFoundError):
         await schedule.record_score(uuid7(), Score(home=1, away=0))
+
+
+async def test_record_score_before_kickoff_is_rejected() -> None:
+    teams = FakeTeamRepository()
+    for team in (KC, LV):
+        await teams.save(team)
+    early_schedule = ScheduleService(
+        teams=teams,
+        games=FakeGameRepository(),
+        clock=lambda: SEASON_OPENER - timedelta(hours=1),
+    )
+    game = await book(early_schedule, KC, LV)
+
+    with pytest.raises(GameNotStartedError):
+        await early_schedule.record_score(game.id, Score(home=1, away=0))
 
 
 async def test_find_by_week_and_team(schedule: ScheduleService) -> None:

@@ -9,7 +9,7 @@ from trench.domain.enums import (
     GameStatus,
     Position,
 )
-from trench.domain.errors import DomainValidationError
+from trench.domain.errors import DomainValidationError, GameNotStartedError
 
 MAX_WEEK = 18
 
@@ -64,7 +64,12 @@ class Game:
     def status(self) -> GameStatus:
         return GameStatus.SCHEDULED if self.score is None else GameStatus.FINAL
 
-    def finalize(self, score: Score) -> Game:
+    def has_started(self, at: datetime) -> bool:
+        return at >= self.kickoff
+
+    def finalize(self, score: Score, *, at: datetime) -> Game:
+        if not self.has_started(at):
+            raise GameNotStartedError(self.id, self.kickoff)
         return replace(self, score=score)
 
     def involves(self, team_id: UUID) -> bool:

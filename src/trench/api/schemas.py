@@ -14,6 +14,7 @@ from pydantic import (
 from trench.analytics.calibration import CalibrationReport
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
+from trench.api.errors import ErrorCode
 from trench.application.predictions import GamePrediction
 from trench.application.previews import GamePreview, MatchupPreview
 from trench.config import AnalyticsSettings
@@ -33,6 +34,11 @@ class _Input(BaseModel):
 
 class _Output(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+
+class ErrorResponse(BaseModel):
+    detail: str
+    code: ErrorCode
 
 
 class TeamCreate(_Input):

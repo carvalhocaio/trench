@@ -8,7 +8,7 @@ async def test_save_and_get_scheduled_game(repos: Repositories, game: Game) -> N
 
 
 async def test_save_persists_final_score(repos: Repositories, game: Game) -> None:
-    await repos.games.save(game.finalize(Score(home=27, away=20)))
+    await repos.games.save(game.finalize(Score(home=27, away=20), at=game.kickoff))
 
     stored = await repos.games.get(game.id)
     assert stored is not None

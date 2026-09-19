@@ -3,12 +3,16 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from trench.api.dependencies import RosterServiceDep
-from trench.api.schemas import PlayerPayload, PlayerRead
+from trench.api.schemas import ErrorResponse, PlayerPayload, PlayerRead
 
 router = APIRouter(tags=["players"])
 
 
-@router.post("/players", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/players",
+    status_code=status.HTTP_201_CREATED,
+    responses={404: {"model": ErrorResponse}},
+)
 async def register_player(
     payload: PlayerPayload, roster: RosterServiceDep
 ) -> PlayerRead:
@@ -16,12 +20,12 @@ async def register_player(
     return PlayerRead.model_validate(player)
 
 
-@router.get("/players/{player_id}")
+@router.get("/players/{player_id}", responses={404: {"model": ErrorResponse}})
 async def get_player(player_id: UUID, roster: RosterServiceDep) -> PlayerRead:
     return PlayerRead.model_validate(await roster.get(player_id))
 
 
-@router.put("/players/{player_id}")
+@router.put("/players/{player_id}", responses={404: {"model": ErrorResponse}})
 async def update_player(
     player_id: UUID, payload: PlayerPayload, roster: RosterServiceDep
 ) -> PlayerRead:
@@ -29,7 +33,7 @@ async def update_player(
     return PlayerRead.model_validate(player)
 
 
-@router.get("/teams/{team_id}/players")
+@router.get("/teams/{team_id}/players", responses={404: {"model": ErrorResponse}})
 async def list_team_players(
     team_id: UUID, roster: RosterServiceDep
 ) -> list[PlayerRead]:

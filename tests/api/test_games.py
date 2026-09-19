@@ -6,7 +6,7 @@ from httpx import AsyncClient
 
 from tests.api.payloads import KANSAS_CITY
 
-KICKOFF = "2026-09-20T17:00:00+00:00"
+KICKOFF = "2026-09-10T17:00:00+00:00"
 
 
 async def create_team(client: AsyncClient, abbreviation: str) -> str:
@@ -121,3 +121,19 @@ async def test_unknown_game_is_not_found(client: AsyncClient) -> None:
     response = await client.get(f"/games/{uuid7()}")
 
     assert response.status_code == 404
+
+
+async def test_scoring_before_kickoff_is_rejected(
+    client: AsyncClient, teams: dict[str, str]
+) -> None:
+    payload = game_payload(teams["KC"], teams["LV"]) | {
+        "kickoff": "2099-09-20T17:00:00+00:00"
+    }
+    created = await client.post("/games", json=payload)
+
+    response = await client.put(
+        f"/games/{created.json()['id']}/score", json={"home": 27, "away": 20}
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "game_not_started"

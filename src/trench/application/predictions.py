@@ -1,12 +1,13 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from uuid import UUID
 
 from trench.analytics.absences import AbsenceReport, assess_absences
 from trench.analytics.errors import InsufficientDataError
 from trench.analytics.projection import Projection, project_game
 from trench.analytics.ratings import TeamRating, compute_ratings
+from trench.application.clock import Clock, utc_now
 from trench.application.lookups import require_game
 from trench.config import AnalyticsSettings
 from trench.domain.entities import Game, Player, PredictionSnapshot
@@ -19,12 +20,6 @@ from trench.domain.repositories import (
 )
 
 MODEL_VERSION = "0.1.0"
-
-type Clock = Callable[[], datetime]
-
-
-def utc_now() -> datetime:
-    return datetime.now(UTC)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
