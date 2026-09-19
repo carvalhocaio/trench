@@ -1,4 +1,4 @@
-.PHONY: help dev run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed import-schedule web-install web-dev web-types web-lint web-typecheck web-build
+.PHONY: help dev run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed import-schedule import-rosters import-injuries import-stats web-install web-dev web-types web-lint web-typecheck web-build
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -79,6 +79,15 @@ seed: ## Seeds the 32 NFL teams (safe to run more than once)
 
 import-schedule: ## Imports a season's schedule and final scores from ESPN (usage: make import-schedule SEASON=2026)
 	uv run trench import-schedule --season $(SEASON)
+
+import-rosters: ## Imports/updates the 32 team rosters from ESPN
+	uv run trench import-rosters
+
+import-injuries: ## Imports the current injury report for a week's games (usage: make import-injuries SEASON=2026 WEEK=2)
+	uv run trench import-injuries --season $(SEASON) --week $(WEEK)
+
+import-stats: ## Imports team and player box score stats for a week's finished games (usage: make import-stats SEASON=2026 WEEK=1)
+	uv run trench import-stats --season $(SEASON) --week $(WEEK)
 
 web-install: ## Installs the web app dependencies with pnpm
 	cd web && pnpm install

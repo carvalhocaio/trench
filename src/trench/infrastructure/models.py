@@ -111,8 +111,39 @@ class TeamGameStatsModel(Base):
 class PlayerGameStatsModel(Base):
     __tablename__ = "player_game_stats"
     __table_args__ = (
-        *_non_negative("passing_touchdowns", "rushing_attempts", "sacks"),
+        *_non_negative(
+            "passing_completions",
+            "passing_attempts",
+            "passing_touchdowns",
+            "interceptions_thrown",
+            "rushing_attempts",
+            "rushing_touchdowns",
+            "receiving_targets",
+            "receptions",
+            "receiving_touchdowns",
+            "fumbles",
+            "fumbles_lost",
+            "tackles",
+            "tackles_for_loss",
+            "sacks",
+            "passes_defended",
+            "interceptions",
+            "defensive_touchdowns",
+            "field_goals_made",
+            "field_goals_attempted",
+            "extra_points_made",
+            "extra_points_attempted",
+            "punts",
+            "kick_returns",
+            "kick_return_touchdowns",
+            "punt_returns",
+            "punt_return_touchdowns",
+        ),
         CheckConstraint("sacks * 2 = floor(sacks * 2)", name="half_sacks"),
+        CheckConstraint(
+            "tackles_for_loss * 2 = floor(tackles_for_loss * 2)",
+            name="half_tackles_for_loss",
+        ),
     )
 
     game_id: Mapped[UUID] = mapped_column(
@@ -120,10 +151,38 @@ class PlayerGameStatsModel(Base):
     )
     player_id: Mapped[UUID] = mapped_column(ForeignKey("players.id"), primary_key=True)
     team_id: Mapped[UUID] = mapped_column(ForeignKey("teams.id"), index=True)
+    passing_completions: Mapped[int] = mapped_column(default=0)
+    passing_attempts: Mapped[int] = mapped_column(default=0)
+    passing_yards: Mapped[int] = mapped_column(default=0)
     passing_touchdowns: Mapped[int] = mapped_column(default=0)
+    interceptions_thrown: Mapped[int] = mapped_column(default=0)
     rushing_attempts: Mapped[int] = mapped_column(default=0)
     rushing_yards: Mapped[int] = mapped_column(default=0)
+    rushing_touchdowns: Mapped[int] = mapped_column(default=0)
+    receiving_targets: Mapped[int] = mapped_column(default=0)
+    receptions: Mapped[int] = mapped_column(default=0)
+    receiving_yards: Mapped[int] = mapped_column(default=0)
+    receiving_touchdowns: Mapped[int] = mapped_column(default=0)
+    fumbles: Mapped[int] = mapped_column(default=0)
+    fumbles_lost: Mapped[int] = mapped_column(default=0)
+    tackles: Mapped[int] = mapped_column(default=0)
+    tackles_for_loss: Mapped[float] = mapped_column(default=0.0)
     sacks: Mapped[float] = mapped_column(default=0.0)
+    passes_defended: Mapped[int] = mapped_column(default=0)
+    interceptions: Mapped[int] = mapped_column(default=0)
+    defensive_touchdowns: Mapped[int] = mapped_column(default=0)
+    field_goals_made: Mapped[int] = mapped_column(default=0)
+    field_goals_attempted: Mapped[int] = mapped_column(default=0)
+    extra_points_made: Mapped[int] = mapped_column(default=0)
+    extra_points_attempted: Mapped[int] = mapped_column(default=0)
+    punts: Mapped[int] = mapped_column(default=0)
+    punt_yards: Mapped[int] = mapped_column(default=0)
+    kick_returns: Mapped[int] = mapped_column(default=0)
+    kick_return_yards: Mapped[int] = mapped_column(default=0)
+    kick_return_touchdowns: Mapped[int] = mapped_column(default=0)
+    punt_returns: Mapped[int] = mapped_column(default=0)
+    punt_return_yards: Mapped[int] = mapped_column(default=0)
+    punt_return_touchdowns: Mapped[int] = mapped_column(default=0)
 
 
 class AbsenceModel(Base):

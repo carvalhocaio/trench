@@ -82,6 +82,9 @@ make db-up                        # Postgres 18 via Docker Compose
 make migrate                      # database schema
 make seed                         # the 32 NFL teams
 make import-schedule SEASON=2026  # full season schedule and final scores, from ESPN
+make import-rosters                       # the 32 team rosters, from ESPN
+make import-injuries SEASON=2026 WEEK=2   # current injury report for a week, from ESPN
+make import-stats SEASON=2026 WEEK=1      # box score stats for a week's finished games
 make dev                          # API on :8000 and web on :3000
 ```
 
@@ -91,10 +94,12 @@ The interactive API docs live at <http://localhost:8000/docs>.
 
 | When | What to record |
 |---|---|
-| After each game | Final score, team stats and player stats. |
-| Wednesday | Injury report, then **Record prediction** for the week's games. |
-| Saturday | Updated injury report and a new snapshot. |
+| After each game | `make import-stats` for the week (final score, team stats and player stats). |
+| Wednesday | `make import-injuries` for the week, then **Record prediction** for the week's games. |
+| Saturday | Re-run `make import-injuries` and take a new snapshot. |
 | Sunday | Last snapshot before kickoff. |
+
+`make import-schedule` and `make import-rosters` only need a re-run when the schedule or a team's roster actually changes (new season, trades, signings).
 
 The calibration page compares the snapshots recorded live with the actual results as the weeks go by.
 
@@ -165,7 +170,7 @@ make migration m="describe the change"
 │   ├── infrastructure/  database, models and SQL repositories
 │   ├── agent/           Gemini preview agent
 │   ├── api/             FastAPI app, routes and schemas
-│   ├── cli.py           `trench seed-teams`, `trench import-schedule` and `trench openapi`
+│   ├── cli.py           `trench seed-teams`, `trench import-schedule`, `trench import-rosters`, `trench import-injuries`, `trench import-stats` and `trench openapi`
 │   └── config.py        settings
 ├── migrations/          Alembic revisions
 ├── tests/               unit, contract and API tests

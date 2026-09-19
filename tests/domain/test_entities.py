@@ -170,6 +170,44 @@ class TestPlayerGameStats:
                 game_id=uuid7(), player_id=uuid7(), team_id=uuid7(), sacks=0.3
             )
 
+    def test_yards_per_reception(self) -> None:
+        stats = PlayerGameStats(
+            game_id=uuid7(),
+            player_id=uuid7(),
+            team_id=uuid7(),
+            receptions=5,
+            receiving_yards=60,
+        )
+
+        assert stats.yards_per_reception == pytest.approx(12.0)
+
+    def test_yards_per_reception_without_receptions(self) -> None:
+        stats = PlayerGameStats(game_id=uuid7(), player_id=uuid7(), team_id=uuid7())
+
+        assert stats.yards_per_reception is None
+
+    def test_accepts_half_tackles_for_loss(self) -> None:
+        stats = PlayerGameStats(
+            game_id=uuid7(), player_id=uuid7(), team_id=uuid7(), tackles_for_loss=1.5
+        )
+
+        assert stats.tackles_for_loss == 1.5
+
+    def test_rejects_fractional_tackles_for_loss(self) -> None:
+        with pytest.raises(DomainValidationError, match="multiple of"):
+            PlayerGameStats(
+                game_id=uuid7(),
+                player_id=uuid7(),
+                team_id=uuid7(),
+                tackles_for_loss=0.3,
+            )
+
+    def test_rejects_negative_new_stat_fields(self) -> None:
+        with pytest.raises(DomainValidationError, match="non-negative"):
+            PlayerGameStats(
+                game_id=uuid7(), player_id=uuid7(), team_id=uuid7(), tackles=-1
+            )
+
 
 class TestPredictionSnapshot:
     def test_complementary_probability_and_spread(self) -> None:

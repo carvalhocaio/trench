@@ -122,21 +122,78 @@ class TeamStatsRead(_Output):
 
 
 class PlayerStatsPayload(_Input):
+    passing_completions: NonNegativeInt = 0
+    passing_attempts: NonNegativeInt = 0
+    passing_yards: int = 0
     passing_touchdowns: NonNegativeInt = 0
+    interceptions_thrown: NonNegativeInt = 0
     rushing_attempts: NonNegativeInt = 0
     rushing_yards: int = 0
+    rushing_touchdowns: NonNegativeInt = 0
+    receiving_targets: NonNegativeInt = 0
+    receptions: NonNegativeInt = 0
+    receiving_yards: int = 0
+    receiving_touchdowns: NonNegativeInt = 0
+    fumbles: NonNegativeInt = 0
+    fumbles_lost: NonNegativeInt = 0
+    tackles: NonNegativeInt = 0
+    tackles_for_loss: NonNegativeFloat = Field(default=0.0, multiple_of=0.5)
     sacks: NonNegativeFloat = Field(default=0.0, multiple_of=0.5)
+    passes_defended: NonNegativeInt = 0
+    interceptions: NonNegativeInt = 0
+    defensive_touchdowns: NonNegativeInt = 0
+    field_goals_made: NonNegativeInt = 0
+    field_goals_attempted: NonNegativeInt = 0
+    extra_points_made: NonNegativeInt = 0
+    extra_points_attempted: NonNegativeInt = 0
+    punts: NonNegativeInt = 0
+    punt_yards: int = 0
+    kick_returns: NonNegativeInt = 0
+    kick_return_yards: int = 0
+    kick_return_touchdowns: NonNegativeInt = 0
+    punt_returns: NonNegativeInt = 0
+    punt_return_yards: int = 0
+    punt_return_touchdowns: NonNegativeInt = 0
 
 
 class PlayerStatsRead(_Output):
     game_id: UUID
     player_id: UUID
     team_id: UUID
+    passing_completions: int
+    passing_attempts: int
+    passing_yards: int
     passing_touchdowns: int
+    interceptions_thrown: int
     rushing_attempts: int
     rushing_yards: int
+    rushing_touchdowns: int
+    receiving_targets: int
+    receptions: int
+    receiving_yards: int
+    receiving_touchdowns: int
+    fumbles: int
+    fumbles_lost: int
+    tackles: int
+    tackles_for_loss: float
     sacks: float
+    passes_defended: int
+    interceptions: int
+    defensive_touchdowns: int
+    field_goals_made: int
+    field_goals_attempted: int
+    extra_points_made: int
+    extra_points_attempted: int
+    punts: int
+    punt_yards: int
+    kick_returns: int
+    kick_return_yards: int
+    kick_return_touchdowns: int
+    punt_returns: int
+    punt_return_yards: int
+    punt_return_touchdowns: int
     yards_per_carry: float | None
+    yards_per_reception: float | None
 
 
 class GameStatsRead(_Output):

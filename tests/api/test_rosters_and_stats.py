@@ -112,6 +112,29 @@ async def test_records_player_stats_with_players_team(
     assert response.json()["yards_per_carry"] == pytest.approx(4.7)
 
 
+async def test_records_receiving_and_defensive_stats(
+    client: AsyncClient, ids: dict[str, str]
+) -> None:
+    response = await client.put(
+        f"/games/{ids['game']}/player-stats/{ids['runner']}",
+        json={
+            "receptions": 4,
+            "receiving_yards": 48,
+            "receiving_touchdowns": 1,
+            "tackles": 6,
+            "tackles_for_loss": 1.5,
+            "interceptions": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["yards_per_reception"] == pytest.approx(12.0)
+    assert body["tackles"] == 6
+    assert body["tackles_for_loss"] == 1.5
+    assert body["interceptions"] == 1
+
+
 @pytest.mark.parametrize("sacks", [0.3, -1.0])
 async def test_rejects_invalid_sacks(
     client: AsyncClient, ids: dict[str, str], sacks: float

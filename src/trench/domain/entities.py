@@ -146,25 +146,83 @@ class PlayerGameStats:
     game_id: UUID
     player_id: UUID
     team_id: UUID
+    passing_completions: int = 0
+    passing_attempts: int = 0
+    passing_yards: int = 0
     passing_touchdowns: int = 0
+    interceptions_thrown: int = 0
     rushing_attempts: int = 0
     rushing_yards: int = 0
+    rushing_touchdowns: int = 0
+    receiving_targets: int = 0
+    receptions: int = 0
+    receiving_yards: int = 0
+    receiving_touchdowns: int = 0
+    fumbles: int = 0
+    fumbles_lost: int = 0
+    tackles: int = 0
+    tackles_for_loss: float = 0.0
     sacks: float = 0.0
+    passes_defended: int = 0
+    interceptions: int = 0
+    defensive_touchdowns: int = 0
+    field_goals_made: int = 0
+    field_goals_attempted: int = 0
+    extra_points_made: int = 0
+    extra_points_attempted: int = 0
+    punts: int = 0
+    punt_yards: int = 0
+    kick_returns: int = 0
+    kick_return_yards: int = 0
+    kick_return_touchdowns: int = 0
+    punt_returns: int = 0
+    punt_return_yards: int = 0
+    punt_return_touchdowns: int = 0
 
     def __post_init__(self) -> None:
         _require_non_negative(
+            passing_completions=self.passing_completions,
+            passing_attempts=self.passing_attempts,
             passing_touchdowns=self.passing_touchdowns,
+            interceptions_thrown=self.interceptions_thrown,
             rushing_attempts=self.rushing_attempts,
+            rushing_touchdowns=self.rushing_touchdowns,
+            receiving_targets=self.receiving_targets,
+            receptions=self.receptions,
+            receiving_touchdowns=self.receiving_touchdowns,
+            fumbles=self.fumbles,
+            fumbles_lost=self.fumbles_lost,
+            tackles=self.tackles,
+            tackles_for_loss=self.tackles_for_loss,
             sacks=self.sacks,
+            passes_defended=self.passes_defended,
+            interceptions=self.interceptions,
+            defensive_touchdowns=self.defensive_touchdowns,
+            field_goals_made=self.field_goals_made,
+            field_goals_attempted=self.field_goals_attempted,
+            extra_points_made=self.extra_points_made,
+            extra_points_attempted=self.extra_points_attempted,
+            punts=self.punts,
+            kick_returns=self.kick_returns,
+            kick_return_touchdowns=self.kick_return_touchdowns,
+            punt_returns=self.punt_returns,
+            punt_return_touchdowns=self.punt_return_touchdowns,
         )
-        if not (self.sacks * 2).is_integer():
-            raise DomainValidationError("sacks must be a multiple of 0.5")
+        for name in ("sacks", "tackles_for_loss"):
+            if not (getattr(self, name) * 2).is_integer():
+                raise DomainValidationError(f"{name} must be a multiple of 0.5")
 
     @property
     def yards_per_carry(self) -> float | None:
         if self.rushing_attempts == 0:
             return None
         return self.rushing_yards / self.rushing_attempts
+
+    @property
+    def yards_per_reception(self) -> float | None:
+        if self.receptions == 0:
+            return None
+        return self.receiving_yards / self.receptions
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
