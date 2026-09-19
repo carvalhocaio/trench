@@ -1,4 +1,4 @@
-.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check audit ci check clean
+.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -29,13 +29,16 @@ format: ## Formats code with ruff
 format-check: ## Verifies formatting with ruff without modifying files
 	uv run ruff format --check .
 
+typecheck: ## Runs mypy in strict mode over the package
+	uv run mypy
+
 audit: ## Audits dependencies for known security vulnerabilities
 	uv run pip-audit
 
-ci: lint format-check audit test ## Runs full verification pipeline locally
+ci: lint format-check typecheck audit test ## Runs full verification pipeline locally
 
 check: ci ## Alias for ci
 
 clean: ## Cleans build artifacts and caches
-	rm -rf .ruff_cache .pytest_cache dist build *.egg-info .coverage htmlcov
+	rm -rf .ruff_cache .pytest_cache .mypy_cache dist build *.egg-info .coverage htmlcov
 	find . -type d -name '__pycache__' -not -path './.venv*' -exec rm -rf {} +
