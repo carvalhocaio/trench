@@ -1,4 +1,4 @@
-.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean
+.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -42,3 +42,12 @@ check: ci ## Alias for ci
 clean: ## Cleans build artifacts and caches
 	rm -rf .ruff_cache .pytest_cache .mypy_cache dist build *.egg-info .coverage htmlcov
 	find . -type d -name '__pycache__' -not -path './.venv*' -exec rm -rf {} +
+
+db-up: ## Starts Postgres and waits until it is healthy
+	docker compose up -d --wait
+
+db-down: ## Stops Postgres keeping the data volume
+	docker compose down
+
+db-reset: ## Stops Postgres and wipes the data volume
+	docker compose down -v
