@@ -5,6 +5,7 @@ import { cache } from "react";
 import { api, ApiError, unwrap } from "@/lib/api/client";
 import type {
   AbsenceRead,
+  CalibrationRead,
   GameRead,
   GameStatsRead,
   HighlightsRead,
@@ -104,6 +105,26 @@ export async function getPreview(gameId: string): Promise<PreviewRead> {
   return unwrap(
     await api.GET("/games/{game_id}/preview", {
       params: { path: { game_id: gameId } },
+    }),
+  );
+}
+
+export async function getCalibration(params: {
+  season: number;
+  shrinkageGames?: number;
+  homeFieldAdvantage?: number;
+  scoreMarginStddev?: number;
+}): Promise<CalibrationRead> {
+  return unwrap(
+    await api.GET("/calibration", {
+      params: {
+        query: {
+          season: params.season,
+          shrinkage_games: params.shrinkageGames,
+          home_field_advantage: params.homeFieldAdvantage,
+          score_margin_stddev: params.scoreMarginStddev,
+        },
+      },
     }),
   );
 }

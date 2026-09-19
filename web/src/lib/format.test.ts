@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatKickoff,
+  formatMetric,
   formatNumber,
   formatPercent,
   formatPoints,
@@ -33,6 +34,13 @@ describe("formatSignedPoints", () => {
     expect(formatSignedPoints(2.3)).toBe("+2,3");
     expect(formatSignedPoints(-2.3)).toBe("-2,3");
     expect(formatSignedPoints(0)).toBe("+0,0");
+  });
+});
+
+describe("formatMetric", () => {
+  it("always shows exactly three decimal places", () => {
+    expect(formatMetric(0.25)).toBe("0,250");
+    expect(formatMetric(0.2024)).toBe("0,202");
   });
 });
 

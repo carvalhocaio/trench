@@ -22,6 +22,11 @@ const signedPointsFormatter = new Intl.NumberFormat(LOCALE, {
   signDisplay: "always",
 });
 
+const metricFormatter = new Intl.NumberFormat(LOCALE, {
+  minimumFractionDigits: 3,
+  maximumFractionDigits: 3,
+});
+
 const kickoffFormatter = new Intl.DateTimeFormat(LOCALE, {
   timeZone: TIMEZONE,
   day: "2-digit",
@@ -50,6 +55,10 @@ export function formatPoints(value: number): string {
 
 export function formatSignedPoints(value: number): string {
   return signedPointsFormatter.format(value);
+}
+
+export function formatMetric(value: number): string {
+  return metricFormatter.format(value);
 }
 
 export function formatKickoff(isoDate: string): string {
