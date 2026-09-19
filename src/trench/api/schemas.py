@@ -302,18 +302,24 @@ def _side(
 class PlayerSeasonRead(_Output):
     player: PlayerRead
     games: int
+    passing_yards: int
     passing_touchdowns: int
     rushing_attempts: int
     rushing_yards: int
+    rushing_touchdowns: int
+    interceptions: int
     yards_per_carry: float | None
     sacks: float
 
 
 class HighlightsRead(BaseModel):
     season: int
+    passing_yards: list[PlayerSeasonRead]
     passing_touchdowns: list[PlayerSeasonRead]
+    rushing_touchdowns_qb: list[PlayerSeasonRead]
     yards_per_carry: list[PlayerSeasonRead]
     sacks: list[PlayerSeasonRead]
+    interceptions: list[PlayerSeasonRead]
 
     @classmethod
     def from_leaders(cls, season: int, leaders: SeasonLeaders) -> HighlightsRead:
@@ -322,9 +328,12 @@ class HighlightsRead(BaseModel):
 
         return cls(
             season=season,
+            passing_yards=rows(leaders.passing_yards),
             passing_touchdowns=rows(leaders.passing_touchdowns),
+            rushing_touchdowns_qb=rows(leaders.rushing_touchdowns_qb),
             yards_per_carry=rows(leaders.yards_per_carry),
             sacks=rows(leaders.sacks),
+            interceptions=rows(leaders.interceptions),
         )
 
 

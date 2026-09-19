@@ -19,7 +19,10 @@ WORKHORSE = make_player(KC, Position.RB, "Workhorse")
 CAMEO = make_player(LV, Position.RB, "Cameo")
 SCRAMBLER = make_player(LV, Position.QB, "Scrambler")
 RUSHER = make_player(LV, Position.EDGE, "Rusher")
-PLAYERS = {p.id: p for p in (PASSER, BACKUP, WORKHORSE, CAMEO, SCRAMBLER, RUSHER)}
+BALLHAWK = make_player(KC, Position.CB, "Ballhawk")
+PLAYERS = {
+    p.id: p for p in (PASSER, BACKUP, WORKHORSE, CAMEO, SCRAMBLER, RUSHER, BALLHAWK)
+}
 WEEKS = [make_game(KC, LV, week=1), make_game(LV, KC, week=2)]
 TEAM_GAMES = {KC.id: 2, LV.id: 2}
 
@@ -28,32 +31,40 @@ def line(
     player: Player,
     week: int,
     *,
+    passing_yards: int = 0,
     passing_touchdowns: int = 0,
     rushing_attempts: int = 0,
     rushing_yards: int = 0,
+    rushing_touchdowns: int = 0,
+    interceptions: int = 0,
     sacks: float = 0.0,
 ) -> PlayerGameStats:
     return PlayerGameStats(
         game_id=WEEKS[week - 1].id,
         player_id=player.id,
         team_id=player.team_id,
+        passing_yards=passing_yards,
         passing_touchdowns=passing_touchdowns,
         rushing_attempts=rushing_attempts,
         rushing_yards=rushing_yards,
+        rushing_touchdowns=rushing_touchdowns,
+        interceptions=interceptions,
         sacks=sacks,
     )
 
 
 STATS = [
-    line(PASSER, 1, passing_touchdowns=3),
-    line(PASSER, 2, passing_touchdowns=2),
-    line(BACKUP, 2, passing_touchdowns=1),
-    line(WORKHORSE, 1, rushing_attempts=20, rushing_yards=90),
+    line(PASSER, 1, passing_yards=250, passing_touchdowns=3),
+    line(PASSER, 2, passing_yards=300, passing_touchdowns=2),
+    line(BACKUP, 2, passing_yards=180, passing_touchdowns=1),
+    line(WORKHORSE, 1, rushing_attempts=20, rushing_yards=90, rushing_touchdowns=1),
     line(WORKHORSE, 2, rushing_attempts=18, rushing_yards=100),
     line(CAMEO, 2, rushing_attempts=3, rushing_yards=60),
-    line(SCRAMBLER, 1, rushing_attempts=15, rushing_yards=120),
+    line(SCRAMBLER, 1, rushing_attempts=15, rushing_yards=120, rushing_touchdowns=2),
     line(RUSHER, 1, sacks=1.5),
     line(RUSHER, 2, sacks=1.0),
+    line(BALLHAWK, 1, interceptions=1),
+    line(BALLHAWK, 2, interceptions=1),
 ]
 
 
@@ -74,7 +85,15 @@ def test_aggregates_every_game_of_a_player() -> None:
 
     assert workhorse.games == 2
     assert workhorse.rushing_attempts == 38
+    assert workhorse.rushing_touchdowns == 1
     assert workhorse.yards_per_carry == pytest.approx(190 / 38)
+
+
+def test_passing_yards_leaders() -> None:
+    top = leaders().passing_yards
+
+    assert names(top) == ["Passer", "Backup"]
+    assert top[0].passing_yards == 550
 
 
 def test_passing_touchdown_leaders() -> None:
@@ -84,14 +103,31 @@ def test_passing_touchdown_leaders() -> None:
     assert top[0].passing_touchdowns == 5
 
 
+def test_qb_rushing_touchdown_leaders_exclude_running_backs() -> None:
+    top = leaders().rushing_touchdowns_qb
+
+    assert names(top) == ["Scrambler"]
+    assert top[0].rushing_touchdowns == 2
+
+
 def test_yards_per_carry_counts_only_qualified_running_backs() -> None:
-    assert names(leaders().yards_per_carry) == ["Workhorse"]
+    top = leaders().yards_per_carry
+
+    assert names(top) == ["Workhorse"]
+    assert top[0].rushing_touchdowns == 1
 
 
 def test_sacks_keep_half_sacks() -> None:
     [rusher] = leaders().sacks
 
     assert rusher.sacks == 2.5
+
+
+def test_interception_leaders() -> None:
+    top = leaders().interceptions
+
+    assert names(top) == ["Ballhawk"]
+    assert top[0].interceptions == 2
 
 
 def test_limit_caps_every_category() -> None:
@@ -110,5 +146,10 @@ def test_ties_favor_fewer_games() -> None:
 
 def test_no_stats_means_no_leaders() -> None:
     assert leaders([]) == SeasonLeaders(
-        passing_touchdowns=(), yards_per_carry=(), sacks=()
+        passing_yards=(),
+        passing_touchdowns=(),
+        rushing_touchdowns_qb=(),
+        yards_per_carry=(),
+        sacks=(),
+        interceptions=(),
     )

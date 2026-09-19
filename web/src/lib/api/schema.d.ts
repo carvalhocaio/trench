@@ -512,12 +512,18 @@ export interface components {
         HighlightsRead: {
             /** Season */
             season: number;
+            /** Passing Yards */
+            passing_yards: components["schemas"]["PlayerSeasonRead"][];
             /** Passing Touchdowns */
             passing_touchdowns: components["schemas"]["PlayerSeasonRead"][];
+            /** Rushing Touchdowns Qb */
+            rushing_touchdowns_qb: components["schemas"]["PlayerSeasonRead"][];
             /** Yards Per Carry */
             yards_per_carry: components["schemas"]["PlayerSeasonRead"][];
             /** Sacks */
             sacks: components["schemas"]["PlayerSeasonRead"][];
+            /** Interceptions */
+            interceptions: components["schemas"]["PlayerSeasonRead"][];
         };
         /** LiveCalibrationRead */
         LiveCalibrationRead: {
@@ -568,12 +574,18 @@ export interface components {
             player: components["schemas"]["PlayerRead"];
             /** Games */
             games: number;
+            /** Passing Yards */
+            passing_yards: number;
             /** Passing Touchdowns */
             passing_touchdowns: number;
             /** Rushing Attempts */
             rushing_attempts: number;
             /** Rushing Yards */
             rushing_yards: number;
+            /** Rushing Touchdowns */
+            rushing_touchdowns: number;
+            /** Interceptions */
+            interceptions: number;
             /** Yards Per Carry */
             yards_per_carry: number | null;
             /** Sacks */

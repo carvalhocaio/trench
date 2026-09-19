@@ -37,12 +37,30 @@ export default async function HighlightsPage({
           formatDetail={(row) => pluralize(row.games, "jogo", "jogos")}
         />
         <HighlightsTable
+          title="Jardas aéreas"
+          rows={highlights.passing_yards}
+          teams={teamIndex}
+          valueHeader="Jardas"
+          formatValue={(row) => formatNumber(row.passing_yards)}
+          formatDetail={(row) => pluralize(row.games, "jogo", "jogos")}
+        />
+        <HighlightsTable
+          title="TDs terrestres de QB"
+          rows={highlights.rushing_touchdowns_qb}
+          teams={teamIndex}
+          valueHeader="TDs"
+          formatValue={(row) => formatNumber(row.rushing_touchdowns)}
+          formatDetail={(row) => pluralize(row.games, "jogo", "jogos")}
+        />
+        <HighlightsTable
           title="Jardas por corrida"
           rows={highlights.yards_per_carry}
           teams={teamIndex}
           valueHeader="Jardas/corrida"
           formatValue={(row) => formatNumber(row.yards_per_carry ?? 0)}
-          formatDetail={(row) => pluralize(row.rushing_attempts, "corrida", "corridas")}
+          formatDetail={(row) =>
+            `${pluralize(row.rushing_attempts, "corrida", "corridas")} · ${pluralize(row.rushing_touchdowns, "TD", "TDs")}`
+          }
         />
         <HighlightsTable
           title="Sacks"
@@ -50,6 +68,14 @@ export default async function HighlightsPage({
           teams={teamIndex}
           valueHeader="Sacks"
           formatValue={(row) => formatNumber(row.sacks)}
+          formatDetail={(row) => pluralize(row.games, "jogo", "jogos")}
+        />
+        <HighlightsTable
+          title="Interceptações"
+          rows={highlights.interceptions}
+          teams={teamIndex}
+          valueHeader="INTs"
+          formatValue={(row) => formatNumber(row.interceptions)}
           formatDetail={(row) => pluralize(row.games, "jogo", "jogos")}
         />
       </div>
