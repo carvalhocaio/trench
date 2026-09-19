@@ -252,10 +252,17 @@ def get_preview_service(
     predictions: PredictionServiceDep,
     highlights: HighlightsServiceDep,
     teams: TeamRepositoryDep,
+    games: GameRepositoryDep,
+    team_stats: TeamStatsRepositoryDep,
     writer: PreviewWriterDep,
 ) -> PreviewService:
     return PreviewService(
-        predictions=predictions, highlights=highlights, teams=teams, writer=writer
+        predictions=predictions,
+        highlights=highlights,
+        teams=teams,
+        games=games,
+        team_stats=team_stats,
+        writer=writer,
     )
 
 

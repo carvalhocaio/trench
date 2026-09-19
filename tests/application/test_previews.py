@@ -14,6 +14,7 @@ from tests.fakes import (
     FakePlayerGameStatsRepository,
     FakePlayerRepository,
     FakePredictionSnapshotRepository,
+    FakeTeamGameStatsRepository,
     FakeTeamRepository,
 )
 from trench.application.highlights import HighlightsService
@@ -26,7 +27,7 @@ from trench.application.previews import (
     PreviewUnavailableError,
 )
 from trench.config import AnalyticsSettings
-from trench.domain.entities import Absence, PlayerGameStats
+from trench.domain.entities import Absence, PlayerGameStats, TeamGameStats
 from trench.domain.enums import AbsenceStatus, Position
 
 
@@ -53,6 +54,7 @@ async def setup() -> Setup:
     players = FakePlayerRepository()
     absences = FakeAbsenceRepository()
     player_stats = FakePlayerGameStatsRepository(games)
+    team_stats = FakeTeamGameStatsRepository(games)
     for team in (KC, LV, DEN, LAC):
         await teams.save(team)
     for game in WEEK_ONE:
@@ -77,6 +79,28 @@ async def setup() -> Setup:
                 passing_touchdowns=3,
             )
         )
+    await team_stats.save(
+        TeamGameStats(
+            game_id=WEEK_ONE[0].id,
+            team_id=KC.id,
+            offensive_plays=60,
+            passing_yards=250,
+            rushing_yards=110,
+            turnovers=0,
+            sacks=1,
+        )
+    )
+    await team_stats.save(
+        TeamGameStats(
+            game_id=WEEK_ONE[0].id,
+            team_id=LV.id,
+            offensive_plays=65,
+            passing_yards=150,
+            rushing_yards=60,
+            turnovers=2,
+            sacks=3,
+        )
+    )
 
     writer = RecordingWriter()
     settings = AnalyticsSettings(_env_file=None)  # pyright: ignore[reportCallIssue]
@@ -93,6 +117,8 @@ async def setup() -> Setup:
             games=games, players=players, player_stats=player_stats
         ),
         teams=teams,
+        games=games,
+        team_stats=team_stats,
         writer=writer,
     )
     return Setup(service=service, writer=writer, game_id=rematch.id)
@@ -134,6 +160,25 @@ async def test_context_only_lists_leaders_from_both_teams(
 
     [context] = setup.writer.contexts
     assert [(leader.player, leader.team) for leader in context.leaders] == [
+        ("Chief Passer", "KC")
+    ]
+
+
+async def test_context_includes_team_efficiency_and_quarterbacks(
+    setup: Setup,
+) -> None:
+    await setup.service.preview(setup.game_id)
+
+    [context] = setup.writer.contexts
+    assert context.away.abbreviation == "KC"
+    assert context.away.yards_per_play == pytest.approx(6.0)
+    assert context.away.yards_per_play_allowed == pytest.approx(round(210 / 65, 1))
+    assert context.away.turnover_margin == pytest.approx(2.0)
+    assert context.home.abbreviation == "LV"
+    assert context.home.yards_per_play == pytest.approx(round(210 / 65, 1))
+    assert context.home.yards_per_play_allowed == pytest.approx(6.0)
+    assert context.home.turnover_margin == pytest.approx(-2.0)
+    assert [(qb.player, qb.team) for qb in context.quarterbacks] == [
         ("Chief Passer", "KC")
     ]
 

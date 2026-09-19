@@ -1,7 +1,7 @@
 import asyncio
 import hashlib
 from collections import OrderedDict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
@@ -9,13 +9,19 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from trench.analytics.efficiency import TeamEfficiency, compute_efficiency
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
 from trench.application.highlights import HighlightsService
 from trench.application.lookups import require_team
 from trench.application.predictions import GamePrediction, PredictionService
 from trench.domain.entities import Team
-from trench.domain.repositories import TeamRepository
+from trench.domain.enums import Position
+from trench.domain.repositories import (
+    GameRepository,
+    TeamGameStatsRepository,
+    TeamRepository,
+)
 
 
 class TeamFacts(BaseModel):
@@ -24,8 +30,21 @@ class TeamFacts(BaseModel):
     games_played: int
     points_for_avg: float
     points_against_avg: float
+    yards_per_play: float | None
+    yards_per_play_allowed: float | None
+    turnover_margin: float
     projected_points: float
     win_probability_pct: int
+
+
+class QuarterbackFact(BaseModel):
+    player: str
+    team: str
+    games: int
+    passing_yards: int
+    passing_touchdowns: int
+    interceptions_thrown: int
+    rushing_touchdowns: int
 
 
 class AbsenceFact(BaseModel):
@@ -53,6 +72,7 @@ class MatchupContext(BaseModel):
     spread: float
     absences: list[AbsenceFact]
     leaders: list[LeaderFact]
+    quarterbacks: list[QuarterbackFact]
 
     @property
     def win_probabilities_pct(self) -> set[int]:
@@ -128,12 +148,16 @@ class PreviewService:
         predictions: PredictionService,
         highlights: HighlightsService,
         teams: TeamRepository,
+        games: GameRepository,
+        team_stats: TeamGameStatsRepository,
         writer: PreviewWriter,
         leaders_limit: int = 10,
     ) -> None:
         self._predictions = predictions
         self._highlights = highlights
         self._teams = teams
+        self._games = games
+        self._team_stats = team_stats
         self._writer = writer
         self._leaders_limit = leaders_limit
 
@@ -143,7 +167,21 @@ class PreviewService:
         home = await require_team(self._teams, game.home_team_id)
         away = await require_team(self._teams, game.away_team_id)
         leaders = await self._highlights.season(game.season, limit=self._leaders_limit)
-        context = build_context(prediction, home=home, away=away, leaders=leaders)
+        team_seasons = await self._highlights.for_teams(
+            game.season, {game.home_team_id, game.away_team_id}
+        )
+        efficiency = compute_efficiency(
+            await self._games.list_by_season(game.season),
+            await self._team_stats.list_by_season(game.season),
+        )
+        context = build_context(
+            prediction,
+            home=home,
+            away=away,
+            leaders=leaders,
+            team_seasons=team_seasons,
+            efficiency=efficiency,
+        )
         return GamePreview(
             prediction=prediction,
             context=context,
@@ -152,7 +190,13 @@ class PreviewService:
 
 
 def build_context(
-    prediction: GamePrediction, *, home: Team, away: Team, leaders: SeasonLeaders
+    prediction: GamePrediction,
+    *,
+    home: Team,
+    away: Team,
+    leaders: SeasonLeaders,
+    team_seasons: Iterable[PlayerSeason],
+    efficiency: Mapping[UUID, TeamEfficiency],
 ) -> MatchupContext:
     projection = prediction.projection
     teams = {home.id: home, away.id: away}
@@ -165,14 +209,17 @@ def build_context(
             prediction.home_rating,
             projection.home_points,
             projection.home_win_probability,
+            efficiency.get(home.id),
         ),
         away=_team_facts(
             away,
             prediction.away_rating,
             projection.away_points,
             projection.away_win_probability,
+            efficiency.get(away.id),
         ),
         spread=round(projection.spread, 1),
+        quarterbacks=_quarterback_facts(team_seasons, teams),
         absences=[
             AbsenceFact(
                 player=impact.player.name,
@@ -204,7 +251,11 @@ def build_context(
 
 
 def _team_facts(
-    team: Team, rating: TeamRating, points: float, probability: float
+    team: Team,
+    rating: TeamRating,
+    points: float,
+    probability: float,
+    efficiency: TeamEfficiency | None,
 ) -> TeamFacts:
     return TeamFacts(
         name=team.name,
@@ -212,9 +263,50 @@ def _team_facts(
         games_played=rating.games_played,
         points_for_avg=round(rating.points_for_avg, 1),
         points_against_avg=round(rating.points_against_avg, 1),
+        yards_per_play=_round_or_none(
+            efficiency.yards_per_play if efficiency else None
+        ),
+        yards_per_play_allowed=_round_or_none(
+            efficiency.yards_per_play_allowed if efficiency else None
+        ),
+        turnover_margin=round(efficiency.turnover_margin, 1) if efficiency else 0.0,
         projected_points=round(points, 1),
         win_probability_pct=round(probability * 100),
     )
+
+
+def _round_or_none(value: float | None) -> float | None:
+    return round(value, 1) if value is not None else None
+
+
+def _quarterback_facts(
+    team_seasons: Iterable[PlayerSeason], teams: dict[UUID, Team]
+) -> list[QuarterbackFact]:
+    # No starter/depth-chart concept in the domain yet: approximate the
+    # starting QB as the one with the most passing yards this season.
+    best: dict[UUID, PlayerSeason] = {}
+    for season in team_seasons:
+        if (
+            season.player.position is not Position.QB
+            or season.player.team_id not in teams
+        ):
+            continue
+        current = best.get(season.player.team_id)
+        if current is None or season.passing_yards > current.passing_yards:
+            best[season.player.team_id] = season
+
+    return [
+        QuarterbackFact(
+            player=season.player.name,
+            team=teams[team_id].abbreviation,
+            games=season.games,
+            passing_yards=season.passing_yards,
+            passing_touchdowns=season.passing_touchdowns,
+            interceptions_thrown=season.interceptions_thrown,
+            rushing_touchdowns=season.rushing_touchdowns,
+        )
+        for team_id, season in best.items()
+    ]
 
 
 def _leader_facts(

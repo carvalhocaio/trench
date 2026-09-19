@@ -15,6 +15,7 @@ class PlayerSeason:
     games: int
     passing_yards: int
     passing_touchdowns: int
+    interceptions_thrown: int
     rushing_attempts: int
     rushing_yards: int
     rushing_touchdowns: int
@@ -50,6 +51,9 @@ def aggregate_seasons(
             games=len(player_lines),
             passing_yards=sum(line.passing_yards for line in player_lines),
             passing_touchdowns=sum(line.passing_touchdowns for line in player_lines),
+            interceptions_thrown=sum(
+                line.interceptions_thrown for line in player_lines
+            ),
             rushing_attempts=sum(line.rushing_attempts for line in player_lines),
             rushing_yards=sum(line.rushing_yards for line in player_lines),
             rushing_touchdowns=sum(line.rushing_touchdowns for line in player_lines),

@@ -1,6 +1,9 @@
 from collections import Counter
+from collections.abc import Collection
+from uuid import UUID
 
 from trench.analytics.highlights import (
+    PlayerSeason,
     SeasonLeaders,
     aggregate_seasons,
     season_leaders,
@@ -39,3 +42,11 @@ class HighlightsService:
             team_games=team_games,
             limit=limit,
         )
+
+    async def for_teams(
+        self, season: int, team_ids: Collection[UUID]
+    ) -> list[PlayerSeason]:
+        stats = await self._player_stats.list_by_season(season)
+        players = await self._players.get_many({line.player_id for line in stats})
+        seasons = aggregate_seasons(stats, {player.id: player for player in players})
+        return [season for season in seasons if season.player.team_id in team_ids]

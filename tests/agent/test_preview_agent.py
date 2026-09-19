@@ -7,11 +7,15 @@ from trench.agent.preview import (
     AgentPreviewWriter,
     create_preview_agent,
     ungrounded_percentages,
+    ungrounded_stat_numbers,
 )
 from trench.application.previews import MatchupPreview, PreviewUnavailableError
 
 INVENTED = GROUNDED.model_copy(
     update={"headline": "Chiefs têm 91% de chance em Las Vegas"}
+)
+INVENTED_YARDS = GROUNDED.model_copy(
+    update={"summary": "Ataque com 999 jardas por jogo nesta temporada."}
 )
 
 
@@ -61,6 +65,22 @@ async def test_gives_up_after_repeated_invention() -> None:
         await writer_for(model).write(CONTEXT)
 
 
+async def test_retries_when_a_stat_number_is_invented() -> None:
+    model, calls = scripted(INVENTED_YARDS, GROUNDED)
+
+    preview = await writer_for(model).write(CONTEXT)
+
+    assert preview == GROUNDED
+    assert len(calls) == 2
+
+
+async def test_gives_up_after_repeated_stat_invention() -> None:
+    model, _ = scripted(INVENTED_YARDS)
+
+    with pytest.raises(PreviewUnavailableError):
+        await writer_for(model).write(CONTEXT)
+
+
 async def test_instructions_carry_the_language() -> None:
     seen: list[str | None] = []
 
@@ -95,3 +115,20 @@ def test_ungrounded_percentages(text: str, expected: set[int]) -> None:
     preview = GROUNDED.model_copy(update={"summary": text})
 
     assert ungrounded_percentages(preview, CONTEXT) == expected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("ataque com 6 jardas por jogada", set()),
+        ("defesa cede 5,1 jardas por jogada", set()),
+        ("ataque com 999 jardas por jogo", {999.0}),
+        ("defesa fez 2 interceptações na temporada", {2.0}),
+        ("na semana 5 o time folgou", set()),
+        ("sem números de estatística aqui", set()),
+    ],
+)
+def test_ungrounded_stat_numbers(text: str, expected: set[float]) -> None:
+    preview = GROUNDED.model_copy(update={"summary": text})
+
+    assert ungrounded_stat_numbers(preview, CONTEXT) == expected

@@ -304,6 +304,7 @@ class PlayerSeasonRead(_Output):
     games: int
     passing_yards: int
     passing_touchdowns: int
+    interceptions_thrown: int
     rushing_attempts: int
     rushing_yards: int
     rushing_touchdowns: int
