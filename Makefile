@@ -1,4 +1,4 @@
-.PHONY: help dev run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed web-install web-dev web-types web-lint web-typecheck web-build
+.PHONY: help dev run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down seed import-schedule web-install web-dev web-types web-lint web-typecheck web-build
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -76,6 +76,9 @@ migrate-down: ## Reverts the latest migration
 
 seed: ## Seeds the 32 NFL teams (safe to run more than once)
 	uv run trench seed-teams
+
+import-schedule: ## Imports a season's schedule and final scores from ESPN (usage: make import-schedule SEASON=2026)
+	uv run trench import-schedule --season $(SEASON)
 
 web-install: ## Installs the web app dependencies with pnpm
 	cd web && pnpm install

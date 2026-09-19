@@ -16,3 +16,8 @@ def test_openapi_prints_the_api_schema(capsys: pytest.CaptureFixture[str]) -> No
 def test_rejects_unknown_command() -> None:
     with pytest.raises(SystemExit):
         main(["unknown"])
+
+
+def test_import_schedule_requires_a_season() -> None:
+    with pytest.raises(SystemExit):
+        main(["import-schedule"])

@@ -81,6 +81,7 @@ make web-install                  # web dependencies
 make db-up                        # Postgres 18 via Docker Compose
 make migrate                      # database schema
 make seed                         # the 32 NFL teams
+make import-schedule SEASON=2026  # full season schedule and final scores, from ESPN
 make dev                          # API on :8000 and web on :3000
 ```
 
@@ -164,7 +165,7 @@ make migration m="describe the change"
 │   ├── infrastructure/  database, models and SQL repositories
 │   ├── agent/           Gemini preview agent
 │   ├── api/             FastAPI app, routes and schemas
-│   ├── cli.py           `trench seed-teams` and `trench openapi`
+│   ├── cli.py           `trench seed-teams`, `trench import-schedule` and `trench openapi`
 │   └── config.py        settings
 ├── migrations/          Alembic revisions
 ├── tests/               unit, contract and API tests
