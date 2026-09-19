@@ -582,10 +582,30 @@ export interface components {
         /** PlayerStatsPayload */
         PlayerStatsPayload: {
             /**
+             * Passing Completions
+             * @default 0
+             */
+            passing_completions: number;
+            /**
+             * Passing Attempts
+             * @default 0
+             */
+            passing_attempts: number;
+            /**
+             * Passing Yards
+             * @default 0
+             */
+            passing_yards: number;
+            /**
              * Passing Touchdowns
              * @default 0
              */
             passing_touchdowns: number;
+            /**
+             * Interceptions Thrown
+             * @default 0
+             */
+            interceptions_thrown: number;
             /**
              * Rushing Attempts
              * @default 0
@@ -597,10 +617,130 @@ export interface components {
              */
             rushing_yards: number;
             /**
+             * Rushing Touchdowns
+             * @default 0
+             */
+            rushing_touchdowns: number;
+            /**
+             * Receiving Targets
+             * @default 0
+             */
+            receiving_targets: number;
+            /**
+             * Receptions
+             * @default 0
+             */
+            receptions: number;
+            /**
+             * Receiving Yards
+             * @default 0
+             */
+            receiving_yards: number;
+            /**
+             * Receiving Touchdowns
+             * @default 0
+             */
+            receiving_touchdowns: number;
+            /**
+             * Fumbles
+             * @default 0
+             */
+            fumbles: number;
+            /**
+             * Fumbles Lost
+             * @default 0
+             */
+            fumbles_lost: number;
+            /**
+             * Tackles
+             * @default 0
+             */
+            tackles: number;
+            /**
+             * Tackles For Loss
+             * @default 0
+             */
+            tackles_for_loss: number;
+            /**
              * Sacks
              * @default 0
              */
             sacks: number;
+            /**
+             * Passes Defended
+             * @default 0
+             */
+            passes_defended: number;
+            /**
+             * Interceptions
+             * @default 0
+             */
+            interceptions: number;
+            /**
+             * Defensive Touchdowns
+             * @default 0
+             */
+            defensive_touchdowns: number;
+            /**
+             * Field Goals Made
+             * @default 0
+             */
+            field_goals_made: number;
+            /**
+             * Field Goals Attempted
+             * @default 0
+             */
+            field_goals_attempted: number;
+            /**
+             * Extra Points Made
+             * @default 0
+             */
+            extra_points_made: number;
+            /**
+             * Extra Points Attempted
+             * @default 0
+             */
+            extra_points_attempted: number;
+            /**
+             * Punts
+             * @default 0
+             */
+            punts: number;
+            /**
+             * Punt Yards
+             * @default 0
+             */
+            punt_yards: number;
+            /**
+             * Kick Returns
+             * @default 0
+             */
+            kick_returns: number;
+            /**
+             * Kick Return Yards
+             * @default 0
+             */
+            kick_return_yards: number;
+            /**
+             * Kick Return Touchdowns
+             * @default 0
+             */
+            kick_return_touchdowns: number;
+            /**
+             * Punt Returns
+             * @default 0
+             */
+            punt_returns: number;
+            /**
+             * Punt Return Yards
+             * @default 0
+             */
+            punt_return_yards: number;
+            /**
+             * Punt Return Touchdowns
+             * @default 0
+             */
+            punt_return_touchdowns: number;
         };
         /** PlayerStatsRead */
         PlayerStatsRead: {
@@ -619,16 +759,74 @@ export interface components {
              * Format: uuid
              */
             team_id: string;
+            /** Passing Completions */
+            passing_completions: number;
+            /** Passing Attempts */
+            passing_attempts: number;
+            /** Passing Yards */
+            passing_yards: number;
             /** Passing Touchdowns */
             passing_touchdowns: number;
+            /** Interceptions Thrown */
+            interceptions_thrown: number;
             /** Rushing Attempts */
             rushing_attempts: number;
             /** Rushing Yards */
             rushing_yards: number;
+            /** Rushing Touchdowns */
+            rushing_touchdowns: number;
+            /** Receiving Targets */
+            receiving_targets: number;
+            /** Receptions */
+            receptions: number;
+            /** Receiving Yards */
+            receiving_yards: number;
+            /** Receiving Touchdowns */
+            receiving_touchdowns: number;
+            /** Fumbles */
+            fumbles: number;
+            /** Fumbles Lost */
+            fumbles_lost: number;
+            /** Tackles */
+            tackles: number;
+            /** Tackles For Loss */
+            tackles_for_loss: number;
             /** Sacks */
             sacks: number;
+            /** Passes Defended */
+            passes_defended: number;
+            /** Interceptions */
+            interceptions: number;
+            /** Defensive Touchdowns */
+            defensive_touchdowns: number;
+            /** Field Goals Made */
+            field_goals_made: number;
+            /** Field Goals Attempted */
+            field_goals_attempted: number;
+            /** Extra Points Made */
+            extra_points_made: number;
+            /** Extra Points Attempted */
+            extra_points_attempted: number;
+            /** Punts */
+            punts: number;
+            /** Punt Yards */
+            punt_yards: number;
+            /** Kick Returns */
+            kick_returns: number;
+            /** Kick Return Yards */
+            kick_return_yards: number;
+            /** Kick Return Touchdowns */
+            kick_return_touchdowns: number;
+            /** Punt Returns */
+            punt_returns: number;
+            /** Punt Return Yards */
+            punt_return_yards: number;
+            /** Punt Return Touchdowns */
+            punt_return_touchdowns: number;
             /** Yards Per Carry */
             yards_per_carry: number | null;
+            /** Yards Per Reception */
+            yards_per_reception: number | null;
         };
         /**
          * Position

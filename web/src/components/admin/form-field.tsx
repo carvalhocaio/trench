@@ -23,6 +23,37 @@ export function FormField({
   );
 }
 
+export function NumberField({
+  label,
+  name,
+  error,
+  defaultValue,
+  step,
+  allowNegative,
+}: {
+  label: string;
+  name: string;
+  error?: string;
+  defaultValue?: string | number;
+  step?: number;
+  allowNegative?: boolean;
+}) {
+  return (
+    <FormField label={label} htmlFor={name} error={error}>
+      <input
+        type="number"
+        id={name}
+        name={name}
+        min={allowNegative ? undefined : 0}
+        step={step}
+        placeholder="0"
+        defaultValue={defaultValue}
+        className={FIELD_CLASS}
+      />
+    </FormField>
+  );
+}
+
 export function FormFeedback({
   formError,
   success,
