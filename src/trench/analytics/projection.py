@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from statistics import NormalDist
 from uuid import UUID
 
+from trench.analytics.absences import NO_ADJUSTMENT, PointsAdjustment
 from trench.analytics.ratings import LeagueRatings
 
 
@@ -27,6 +28,7 @@ def project_game(
     away_team_id: UUID,
     home_field_advantage: float,
     score_margin_stddev: float,
+    adjustment: PointsAdjustment = NO_ADJUSTMENT,
 ) -> Projection:
     if score_margin_stddev <= 0:
         raise ValueError("score_margin_stddev must be positive")
@@ -41,8 +43,8 @@ def project_game(
     away_points = _expected_points(
         ratings.league_points_avg, away.offense_strength, home.defense_strength
     )
-    projected_home = max(0.0, home_points + home_edge)
-    projected_away = max(0.0, away_points - home_edge)
+    projected_home = max(0.0, home_points + home_edge + adjustment.home)
+    projected_away = max(0.0, away_points - home_edge + adjustment.away)
 
     return Projection(
         home_points=projected_home,
