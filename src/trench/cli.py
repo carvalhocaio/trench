@@ -1,7 +1,9 @@
 import argparse
 import asyncio
+import json
 from collections.abc import Sequence
 
+from trench.api.app import create_app
 from trench.application.seed import seed_teams
 from trench.config import get_database_settings
 from trench.domain.league import NFL_FRANCHISES
@@ -19,7 +21,11 @@ async def _seed_teams() -> str:
     return f"teams created: {len(result.created)}, skipped: {len(result.skipped)}"
 
 
-COMMANDS = {"seed-teams": _seed_teams}
+async def _openapi() -> str:
+    return json.dumps(create_app().openapi(), indent=2, ensure_ascii=False)
+
+
+COMMANDS = {"openapi": _openapi, "seed-teams": _seed_teams}
 
 
 def main(argv: Sequence[str] | None = None) -> None:
