@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import (
@@ -9,8 +10,16 @@ from pydantic import (
     NonNegativeInt,
 )
 
+from trench.analytics.ratings import TeamRating
+from trench.application.predictions import GamePrediction
 from trench.domain.entities import MAX_WEEK, Score
-from trench.domain.enums import Conference, Division, GameStatus, Position
+from trench.domain.enums import (
+    AbsenceStatus,
+    Conference,
+    Division,
+    GameStatus,
+    Position,
+)
 
 
 class _Input(BaseModel):
@@ -117,3 +126,101 @@ class PlayerStatsRead(_Output):
     rushing_yards: int
     sacks: float
     yards_per_carry: float | None
+
+
+class AbsencePayload(_Input):
+    status: AbsenceStatus
+
+
+class AbsenceRead(_Output):
+    game_id: UUID
+    player_id: UUID
+    status: AbsenceStatus
+
+
+class RatingRead(_Output):
+    games_played: int
+    points_for_avg: float
+    points_against_avg: float
+    offense_strength: float
+    defense_strength: float
+
+
+class SideRead(BaseModel):
+    team_id: UUID
+    projected_points: float
+    win_probability: float
+    rating: RatingRead
+
+
+class AbsenceImpactRead(BaseModel):
+    player: PlayerRead
+    status: AbsenceStatus
+    affected_team_id: UUID
+    points_delta: float
+
+
+class PredictionRead(BaseModel):
+    game: GameRead
+    as_of: datetime
+    spread: float
+    home: SideRead
+    away: SideRead
+    absences: list[AbsenceImpactRead]
+
+    @classmethod
+    def from_prediction(cls, prediction: GamePrediction) -> PredictionRead:
+        game, projection = prediction.game, prediction.projection
+        return cls(
+            game=GameRead.model_validate(game),
+            as_of=prediction.as_of,
+            spread=projection.spread,
+            home=_side(
+                game.home_team_id,
+                projection.home_points,
+                projection.home_win_probability,
+                prediction.home_rating,
+            ),
+            away=_side(
+                game.away_team_id,
+                projection.away_points,
+                projection.away_win_probability,
+                prediction.away_rating,
+            ),
+            absences=[
+                AbsenceImpactRead(
+                    player=PlayerRead.model_validate(impact.player),
+                    status=impact.status,
+                    affected_team_id=(
+                        game.home_team_id
+                        if impact.applies_to_home
+                        else game.away_team_id
+                    ),
+                    points_delta=impact.points_delta,
+                )
+                for impact in prediction.absences.impacts
+            ],
+        )
+
+
+class SnapshotRead(_Output):
+    id: UUID
+    game_id: UUID
+    as_of: datetime
+    home_projected_points: float
+    away_projected_points: float
+    home_win_probability: float
+    away_win_probability: float
+    projected_spread: float
+    model_version: str
+
+
+def _side(
+    team_id: UUID, points: float, probability: float, rating: TeamRating
+) -> SideRead:
+    return SideRead(
+        team_id=team_id,
+        projected_points=points,
+        win_probability=probability,
+        rating=RatingRead.model_validate(rating),
+    )

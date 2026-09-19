@@ -76,6 +76,10 @@ class PredictionService:
             if game.week == week
         ]
 
+    async def history(self, game_id: UUID) -> list[PredictionSnapshot]:
+        await require_game(self._games, game_id)
+        return await self._snapshots.list_by_game(game_id)
+
     async def record(self, game_id: UUID) -> GamePrediction:
         prediction = await self.predict(game_id)
         await self._snapshots.save(prediction.to_snapshot())

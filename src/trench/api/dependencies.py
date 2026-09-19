@@ -4,21 +4,30 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from trench.application.injuries import InjuryReportService
+from trench.application.predictions import PredictionService
 from trench.application.roster import RosterService
 from trench.application.schedule import ScheduleService
 from trench.application.stats import GameStatsService
+from trench.config import AnalyticsSettings, get_analytics_settings
 from trench.domain.repositories import (
+    AbsenceRepository,
     GameRepository,
     PlayerGameStatsRepository,
     PlayerRepository,
+    PredictionSnapshotRepository,
     TeamGameStatsRepository,
     TeamRepository,
 )
+from trench.infrastructure.repositories.absences import SqlAbsenceRepository
 from trench.infrastructure.repositories.games import SqlGameRepository
 from trench.infrastructure.repositories.player_stats import (
     SqlPlayerGameStatsRepository,
 )
 from trench.infrastructure.repositories.players import SqlPlayerRepository
+from trench.infrastructure.repositories.predictions import (
+    SqlPredictionSnapshotRepository,
+)
 from trench.infrastructure.repositories.team_stats import SqlTeamGameStatsRepository
 from trench.infrastructure.repositories.teams import SqlTeamRepository
 
@@ -73,6 +82,24 @@ PlayerStatsRepositoryDep = Annotated[
 ]
 
 
+def get_absence_repository(session: SessionDep) -> AbsenceRepository:
+    return SqlAbsenceRepository(session)
+
+
+AbsenceRepositoryDep = Annotated[AbsenceRepository, Depends(get_absence_repository)]
+
+
+def get_snapshot_repository(session: SessionDep) -> PredictionSnapshotRepository:
+    return SqlPredictionSnapshotRepository(session)
+
+
+SnapshotRepositoryDep = Annotated[
+    PredictionSnapshotRepository, Depends(get_snapshot_repository)
+]
+
+AnalyticsSettingsDep = Annotated[AnalyticsSettings, Depends(get_analytics_settings)]
+
+
 def get_schedule_service(
     teams: TeamRepositoryDep, games: GameRepositoryDep
 ) -> ScheduleService:
@@ -106,3 +133,35 @@ def get_game_stats_service(
 
 
 GameStatsServiceDep = Annotated[GameStatsService, Depends(get_game_stats_service)]
+
+
+def get_injury_report_service(
+    games: GameRepositoryDep,
+    players: PlayerRepositoryDep,
+    absences: AbsenceRepositoryDep,
+) -> InjuryReportService:
+    return InjuryReportService(games=games, players=players, absences=absences)
+
+
+InjuryReportServiceDep = Annotated[
+    InjuryReportService, Depends(get_injury_report_service)
+]
+
+
+def get_prediction_service(
+    games: GameRepositoryDep,
+    players: PlayerRepositoryDep,
+    absences: AbsenceRepositoryDep,
+    snapshots: SnapshotRepositoryDep,
+    settings: AnalyticsSettingsDep,
+) -> PredictionService:
+    return PredictionService(
+        games=games,
+        players=players,
+        absences=absences,
+        snapshots=snapshots,
+        settings=settings,
+    )
+
+
+PredictionServiceDep = Annotated[PredictionService, Depends(get_prediction_service)]

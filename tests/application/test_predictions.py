@@ -137,3 +137,17 @@ async def test_season_opener_has_no_data(world: World) -> None:
 
     with pytest.raises(InsufficientDataError):
         await world.service.predict(opener.id)
+
+
+async def test_history_lists_recorded_snapshots(world: World) -> None:
+    game = await schedule(world, make_game(KC, LV, week=2))
+    await world.service.record(game.id)
+
+    [snapshot] = await world.service.history(game.id)
+
+    assert snapshot.game_id == game.id
+
+
+async def test_history_of_unknown_game_raises(world: World) -> None:
+    with pytest.raises(GameNotFoundError):
+        await world.service.history(uuid7())

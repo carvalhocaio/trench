@@ -5,7 +5,15 @@ from fastapi import FastAPI
 
 from trench import __version__
 from trench.api.errors import register_exception_handlers
-from trench.api.routes import games, health, players, stats, teams
+from trench.api.routes import (
+    absences,
+    games,
+    health,
+    players,
+    predictions,
+    stats,
+    teams,
+)
 from trench.config import get_database_settings
 from trench.infrastructure.database import create_engine, create_session_factory
 
@@ -26,4 +34,6 @@ def create_app() -> FastAPI:
     app.include_router(games.router)
     app.include_router(players.router)
     app.include_router(stats.router)
+    app.include_router(absences.router)
+    app.include_router(predictions.router)
     return app
