@@ -12,6 +12,7 @@ from trench.application.highlights import HighlightsService
 from trench.application.injuries import InjuryReportService
 from trench.application.predictions import PredictionService
 from trench.application.previews import (
+    CachingPreviewWriter,
     PreviewService,
     PreviewUnavailableError,
     PreviewWriter,
@@ -197,7 +198,9 @@ def get_preview_writer() -> PreviewWriter:
             "LLM is not configured: set GOOGLE_API_KEY"
         ) from error
     agent = create_preview_agent(build_model(settings), language=settings.language)
-    return AgentPreviewWriter(agent)
+    return CachingPreviewWriter(
+        AgentPreviewWriter(agent), max_entries=settings.preview_cache_size
+    )
 
 
 PreviewWriterDep = Annotated[PreviewWriter, Depends(get_preview_writer)]

@@ -1,3 +1,6 @@
+import asyncio
+import hashlib
+from collections import OrderedDict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -69,6 +72,46 @@ class PreviewWriter(Protocol):
 
 class PreviewUnavailableError(Exception):
     pass
+
+
+class CachingPreviewWriter:
+    def __init__(self, writer: PreviewWriter, *, max_entries: int) -> None:
+        self._writer = writer
+        self._max_entries = max_entries
+        self._cache: OrderedDict[str, MatchupPreview] = OrderedDict()
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._waiters: dict[str, int] = {}
+
+    async def write(self, context: MatchupContext) -> MatchupPreview:
+        key = _cache_key(context)
+        cached = self._cache.get(key)
+        if cached is not None:
+            self._cache.move_to_end(key)
+            return cached
+
+        lock = self._locks.setdefault(key, asyncio.Lock())
+        self._waiters[key] = self._waiters.get(key, 0) + 1
+        try:
+            async with lock:
+                cached = self._cache.get(key)
+                if cached is not None:
+                    self._cache.move_to_end(key)
+                    return cached
+                preview = await self._writer.write(context)
+                self._cache[key] = preview
+                self._cache.move_to_end(key)
+                if len(self._cache) > self._max_entries:
+                    self._cache.popitem(last=False)
+                return preview
+        finally:
+            self._waiters[key] -= 1
+            if self._waiters[key] == 0:
+                del self._waiters[key]
+                del self._locks[key]
+
+
+def _cache_key(context: MatchupContext) -> str:
+    return hashlib.sha256(context.model_dump_json().encode()).hexdigest()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

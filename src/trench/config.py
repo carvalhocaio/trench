@@ -3,7 +3,14 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Annotated
 
-from pydantic import Field, NonNegativeFloat, PositiveFloat, SecretStr, field_validator
+from pydantic import (
+    Field,
+    NonNegativeFloat,
+    PositiveFloat,
+    PositiveInt,
+    SecretStr,
+    field_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -73,6 +80,7 @@ class LLMSettings(_EnvSettings):
     model: str = "google:gemini-3.8-flash"
     api_key: SecretStr = Field(validation_alias="GOOGLE_API_KEY")
     language: str = "pt-BR"
+    preview_cache_size: PositiveInt = 256
 
 
 class AnalyticsSettings(_EnvSettings):
