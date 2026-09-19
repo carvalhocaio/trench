@@ -1,7 +1,10 @@
-.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down
+.PHONY: help run sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
+
+run: ## Starts the API with auto-reload on http://localhost:8000
+	uv run uvicorn trench.api.app:create_app --factory --reload
 
 sync: ## Installs runtime and dev dependencies using uv
 	uv sync

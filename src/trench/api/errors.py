@@ -1,0 +1,35 @@
+from collections.abc import Awaitable, Callable
+
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+
+from trench.analytics.errors import InsufficientDataError
+from trench.application.errors import GameNotFoundError
+from trench.domain.errors import DomainValidationError
+
+type ExceptionHandler = Callable[[Request, Exception], Awaitable[JSONResponse]]
+
+STATUS_BY_ERROR: dict[type[Exception], int] = {
+    DomainValidationError: status.HTTP_422_UNPROCESSABLE_CONTENT,
+    GameNotFoundError: status.HTTP_404_NOT_FOUND,
+    InsufficientDataError: status.HTTP_409_CONFLICT,
+}
+
+
+def register_exception_handlers(app: FastAPI) -> None:
+    for error_type, status_code in STATUS_BY_ERROR.items():
+        app.add_exception_handler(error_type, _responder(status_code))
+    app.add_exception_handler(
+        IntegrityError,
+        _responder(status.HTTP_409_CONFLICT, "resource conflicts with existing data"),
+    )
+
+
+def _responder(status_code: int, detail: str | None = None) -> ExceptionHandler:
+    async def handle(_: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse(
+            status_code=status_code, content={"detail": detail or str(exc)}
+        )
+
+    return handle
