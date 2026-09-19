@@ -1,4 +1,4 @@
-.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset
+.PHONY: help sync install hooks hooks-run test lint lint-fix format format-check typecheck audit ci check clean db-up db-down db-reset migrate migration migrate-down
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -51,3 +51,16 @@ db-down: ## Stops Postgres keeping the data volume
 
 db-reset: ## Stops Postgres and wipes the data volume
 	docker compose down -v
+
+migrate: ## Applies all pending migrations
+	uv run alembic upgrade head
+
+migration: ## Autogenerates a migration: make migration m="describe the change"
+	@if [ -z "$(m)" ]; then \
+		echo 'Error: m is required. Example: make migration m="add teams table"'; \
+		exit 1; \
+	fi
+	uv run alembic revision --autogenerate -m "$(m)"
+
+migrate-down: ## Reverts the latest migration
+	uv run alembic downgrade -1
