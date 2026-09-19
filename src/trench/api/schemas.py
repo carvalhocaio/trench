@@ -1,9 +1,16 @@
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, NonNegativeInt
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    NonNegativeFloat,
+    NonNegativeInt,
+)
 
 from trench.domain.entities import MAX_WEEK, Score
-from trench.domain.enums import Conference, Division, GameStatus
+from trench.domain.enums import Conference, Division, GameStatus, Position
 
 
 class _Input(BaseModel):
@@ -59,3 +66,54 @@ class GameRead(_Output):
     away_team_id: UUID
     status: GameStatus
     score: ScoreRead | None
+
+
+class PlayerPayload(_Input):
+    name: str = Field(min_length=1, max_length=128)
+    team_id: UUID
+    position: Position
+
+
+class PlayerRead(_Output):
+    id: UUID
+    name: str
+    team_id: UUID
+    position: Position
+
+
+class TeamStatsPayload(_Input):
+    offensive_plays: NonNegativeInt
+    passing_yards: int
+    rushing_yards: int
+    turnovers: NonNegativeInt
+    sacks: NonNegativeInt
+
+
+class TeamStatsRead(_Output):
+    game_id: UUID
+    team_id: UUID
+    offensive_plays: int
+    passing_yards: int
+    rushing_yards: int
+    turnovers: int
+    sacks: int
+    total_yards: int
+    yards_per_play: float | None
+
+
+class PlayerStatsPayload(_Input):
+    passing_touchdowns: NonNegativeInt = 0
+    rushing_attempts: NonNegativeInt = 0
+    rushing_yards: int = 0
+    sacks: NonNegativeFloat = Field(default=0.0, multiple_of=0.5)
+
+
+class PlayerStatsRead(_Output):
+    game_id: UUID
+    player_id: UUID
+    team_id: UUID
+    passing_touchdowns: int
+    rushing_attempts: int
+    rushing_yards: int
+    sacks: float
+    yards_per_carry: float | None

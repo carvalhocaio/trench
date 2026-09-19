@@ -6,7 +6,7 @@ from uuid import UUID
 from trench.analytics.absences import AbsenceReport, assess_absences
 from trench.analytics.projection import Projection, project_game
 from trench.analytics.ratings import TeamRating, compute_ratings
-from trench.application.errors import GameNotFoundError
+from trench.application.lookups import require_game
 from trench.config import AnalyticsSettings
 from trench.domain.entities import Game, Player, PredictionSnapshot
 from trench.domain.repositories import (
@@ -64,9 +64,7 @@ class PredictionService:
         self._clock = clock
 
     async def predict(self, game_id: UUID) -> GamePrediction:
-        game = await self._games.get(game_id)
-        if game is None:
-            raise GameNotFoundError(game_id)
+        game = await require_game(self._games, game_id)
         season_games = await self._games.list_by_season(game.season)
         return await self._predict(game, season_games)
 
