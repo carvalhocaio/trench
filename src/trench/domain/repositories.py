@@ -1,0 +1,26 @@
+from typing import Protocol
+from uuid import UUID
+
+from trench.domain.entities import Game, Team
+
+
+class TeamRepository(Protocol):
+    async def save(self, team: Team) -> None: ...
+
+    async def get(self, team_id: UUID) -> Team | None: ...
+
+    async def get_by_abbreviation(self, abbreviation: str) -> Team | None: ...
+
+    async def list_all(self) -> list[Team]: ...
+
+
+class GameRepository(Protocol):
+    async def save(self, game: Game) -> None: ...
+
+    async def get(self, game_id: UUID) -> Game | None: ...
+
+    async def list_by_season(
+        self, season: int, *, week: int | None = None
+    ) -> list[Game]: ...
+
+    async def list_by_team(self, team_id: UUID, season: int) -> list[Game]: ...
