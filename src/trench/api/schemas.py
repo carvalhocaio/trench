@@ -213,6 +213,9 @@ class AbsenceRead(_Output):
 
 class RatingRead(_Output):
     games_played: int
+    wins: int
+    losses: int
+    ties: int
     points_for_avg: float
     points_against_avg: float
     offense_strength: float

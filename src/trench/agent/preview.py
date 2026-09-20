@@ -12,7 +12,10 @@ from trench.application.previews import (
 PERCENTAGE = re.compile(r"(\d{1,3})(?:[.,]\d+)?\s?%")
 PERCENT_TOLERANCE = 1
 
-STAT_KEYWORD = r"(?:jardas?|yards?|touchdowns?|tds?|sacks?|interceptaç\w*|turnovers?)"
+STAT_KEYWORD = (
+    r"(?:jardas?|yards?|touchdowns?|tds?|sacks?|interceptaç\w*|turnovers?"
+    r"|vit[oó]rias?|derrotas?|retrospecto|wins?|losses?|record)"
+)
 NUMBER = r"\d+(?:[.,]\d+)?"
 NUMBER_NEAR_STAT_KEYWORD = re.compile(
     rf"(?:({NUMBER})\s*{STAT_KEYWORD})|(?:{STAT_KEYWORD}\s*(?:de\s*)?({NUMBER}))",
@@ -80,6 +83,7 @@ def _context_stat_numbers(context: MatchupContext) -> set[float]:
             values.add(team.yards_per_play)
         if team.yards_per_play_allowed is not None:
             values.add(team.yards_per_play_allowed)
+        values.update({team.wins, team.losses, team.ties})
     for absence in context.absences:
         values.add(absence.points_delta)
     for leader in context.leaders:

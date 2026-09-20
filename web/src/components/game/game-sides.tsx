@@ -25,6 +25,13 @@ function SideCard({ team, side }: { team: TeamRead; side: SideRead }) {
           <dd className="tabular-nums text-zinc-900">{rating.games_played}</dd>
         </div>
         <div className="flex justify-between">
+          <dt className="text-zinc-500">Retrospecto</dt>
+          <dd className="tabular-nums text-zinc-900">
+            {rating.wins}-{rating.losses}
+            {rating.ties > 0 ? `-${rating.ties}` : ""}
+          </dd>
+        </div>
+        <div className="flex justify-between">
           <dt className="text-zinc-500">Média de pontos feitos</dt>
           <dd className="tabular-nums text-zinc-900">
             {formatPoints(rating.points_for_avg)}

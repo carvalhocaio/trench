@@ -124,6 +124,8 @@ def test_ungrounded_percentages(text: str, expected: set[int]) -> None:
         ("defesa cede 5,1 jardas por jogada", set()),
         ("ataque com 999 jardas por jogo", {999.0}),
         ("defesa fez 2 interceptações na temporada", {2.0}),
+        ("chegam com retrospecto de 1 vitória", set()),
+        ("chegam com retrospecto de 9 vitórias", {9.0}),
         ("na semana 5 o time folgou", set()),
         ("sem números de estatística aqui", set()),
     ],

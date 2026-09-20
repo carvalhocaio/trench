@@ -55,6 +55,35 @@ def test_unknown_team_gets_neutral_rating() -> None:
     assert rating.defense_strength == pytest.approx(1.0)
 
 
+def test_tracks_wins_losses_and_ties() -> None:
+    ratings = compute_ratings(WEEK_ONE, shrinkage_games=K)
+
+    kc = ratings.rating_for(KC.id)
+    assert (kc.wins, kc.losses, kc.ties) == (1, 0, 0)
+    lv = ratings.rating_for(LV.id)
+    assert (lv.wins, lv.losses, lv.ties) == (0, 1, 0)
+    den = ratings.rating_for(DEN.id)
+    assert (den.wins, den.losses, den.ties) == (0, 0, 1)
+
+
+def test_mixed_record_across_a_season() -> None:
+    season = [
+        final(KC, LV, (30, 10), week=1),
+        final(LV, KC, (20, 17), week=2),
+        final(KC, LV, (14, 14), week=3),
+    ]
+
+    kc = compute_ratings(season, shrinkage_games=K).rating_for(KC.id)
+
+    assert (kc.wins, kc.losses, kc.ties) == (1, 1, 1)
+
+
+def test_unknown_team_has_no_record() -> None:
+    rating = compute_ratings(WEEK_ONE, shrinkage_games=K).rating_for(uuid7())
+
+    assert (rating.wins, rating.losses, rating.ties) == (0, 0, 0)
+
+
 def test_ignores_scheduled_games() -> None:
     scheduled = make_game(KC, DEN, week=2)
 

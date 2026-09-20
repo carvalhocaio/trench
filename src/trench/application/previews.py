@@ -28,6 +28,9 @@ class TeamFacts(BaseModel):
     name: str
     abbreviation: str
     games_played: int
+    wins: int
+    losses: int
+    ties: int
     points_for_avg: float
     points_against_avg: float
     yards_per_play: float | None
@@ -261,6 +264,9 @@ def _team_facts(
         name=team.name,
         abbreviation=team.abbreviation,
         games_played=rating.games_played,
+        wins=rating.wins,
+        losses=rating.losses,
+        ties=rating.ties,
         points_for_avg=round(rating.points_for_avg, 1),
         points_against_avg=round(rating.points_against_avg, 1),
         yards_per_play=_round_or_none(

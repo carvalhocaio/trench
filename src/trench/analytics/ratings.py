@@ -12,6 +12,9 @@ from trench.domain.enums import GameStatus
 class TeamRating:
     team_id: UUID
     games_played: int
+    wins: int
+    losses: int
+    ties: int
     points_for_avg: float
     points_against_avg: float
     offense_strength: float
@@ -30,6 +33,9 @@ class LeagueRatings:
             points_for=0,
             points_against=0,
             games_played=0,
+            wins=0,
+            losses=0,
+            ties=0,
             league_points_avg=self.league_points_avg,
             shrinkage_games=self.shrinkage_games,
         )
@@ -42,13 +48,23 @@ def compute_ratings(games: Iterable[Game], *, shrinkage_games: float) -> LeagueR
     points_for: Counter[UUID] = Counter()
     points_against: Counter[UUID] = Counter()
     games_played: Counter[UUID] = Counter()
+    wins: Counter[UUID] = Counter()
+    losses: Counter[UUID] = Counter()
+    ties: Counter[UUID] = Counter()
     for game in games:
         if game.status is not GameStatus.FINAL:
             continue
+        winner_id = game.winner_id()
         for team_id in (game.home_team_id, game.away_team_id):
             points_for[team_id] += game.points_for(team_id)
             points_against[team_id] += game.points_against(team_id)
             games_played[team_id] += 1
+            if winner_id is None:
+                ties[team_id] += 1
+            elif winner_id == team_id:
+                wins[team_id] += 1
+            else:
+                losses[team_id] += 1
 
     total_points = points_for.total()
     if total_points == 0:
@@ -61,6 +77,9 @@ def compute_ratings(games: Iterable[Game], *, shrinkage_games: float) -> LeagueR
             points_for=points_for[team_id],
             points_against=points_against[team_id],
             games_played=played,
+            wins=wins[team_id],
+            losses=losses[team_id],
+            ties=ties[team_id],
             league_points_avg=league_points_avg,
             shrinkage_games=shrinkage_games,
         )
@@ -79,6 +98,9 @@ def _rate(
     points_for: int,
     points_against: int,
     games_played: int,
+    wins: int,
+    losses: int,
+    ties: int,
     league_points_avg: float,
     shrinkage_games: float,
 ) -> TeamRating:
@@ -91,6 +113,9 @@ def _rate(
     return TeamRating(
         team_id=team_id,
         games_played=games_played,
+        wins=wins,
+        losses=losses,
+        ties=ties,
         points_for_avg=points_for_avg,
         points_against_avg=points_against_avg,
         offense_strength=points_for_avg / league_points_avg,

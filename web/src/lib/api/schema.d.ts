@@ -396,6 +396,10 @@ export interface components {
             home_field_advantage: number;
             /** Score Margin Stddev */
             score_margin_stddev: number;
+            /** Efficiency Weight */
+            efficiency_weight: number;
+            /** Efficiency Shrinkage Games */
+            efficiency_shrinkage_games: number;
         };
         /** CalibrationRead */
         CalibrationRead: {
@@ -578,6 +582,8 @@ export interface components {
             passing_yards: number;
             /** Passing Touchdowns */
             passing_touchdowns: number;
+            /** Interceptions Thrown */
+            interceptions_thrown: number;
             /** Rushing Attempts */
             rushing_attempts: number;
             /** Rushing Yards */
@@ -869,6 +875,12 @@ export interface components {
         RatingRead: {
             /** Games Played */
             games_played: number;
+            /** Wins */
+            wins: number;
+            /** Losses */
+            losses: number;
+            /** Ties */
+            ties: number;
             /** Points For Avg */
             points_for_avg: number;
             /** Points Against Avg */
@@ -2030,6 +2042,8 @@ export interface operations {
                 shrinkage_games?: number | null;
                 home_field_advantage?: number | null;
                 score_margin_stddev?: number | null;
+                efficiency_weight?: number | null;
+                efficiency_shrinkage_games?: number | null;
             };
             header?: never;
             path?: never;
