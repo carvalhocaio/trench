@@ -14,7 +14,8 @@ PERCENT_TOLERANCE = 1
 
 STAT_KEYWORD = (
     r"(?:jardas?|yards?|touchdowns?|tds?|sacks?|interceptaç\w*|turnovers?"
-    r"|vit[oó]rias?|derrotas?|retrospecto|wins?|losses?|record)"
+    r"|vit[oó]rias?|derrotas?|retrospecto|wins?|losses?|record"
+    r"|placar|pontos?|points?|score)"
 )
 NUMBER = r"\d+(?:[.,]\d+)?"
 NUMBER_NEAR_STAT_KEYWORD = re.compile(
@@ -38,6 +39,12 @@ statistical model for the current season. It is your only source of facts:
 - Absences with a negative points_delta hurt that team's own scoring; a
   positive one helps the opponent.
 - players_to_watch may only name players listed in absences or leaders.
+- If "outcome" is present, the game has already been played: write a recap
+  instead of a preview, and state the final score from outcome exactly.
+  If outcome.was_upset is true, say plainly that the winner was not the
+  pre-game favorite (an upset/zebra). If false, explain the favorite won
+  as the numbers suggested, using the opponent's rating and record for
+  context on why the result was not surprising.
 """.strip()
 
 
@@ -97,6 +104,8 @@ def _context_stat_numbers(context: MatchupContext) -> set[float]:
                 quarterback.rushing_touchdowns,
             }
         )
+    if context.outcome is not None:
+        values.update({context.outcome.home_score, context.outcome.away_score})
     return values
 
 

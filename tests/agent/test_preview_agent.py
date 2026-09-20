@@ -2,7 +2,7 @@ import pytest
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from tests.agent.samples import CONTEXT, GROUNDED
+from tests.agent.samples import CONTEXT, GROUNDED, PLAYED_CONTEXT
 from trench.agent.preview import (
     AgentPreviewWriter,
     create_preview_agent,
@@ -134,3 +134,29 @@ def test_ungrounded_stat_numbers(text: str, expected: set[float]) -> None:
     preview = GROUNDED.model_copy(update={"summary": text})
 
     assert ungrounded_stat_numbers(preview, CONTEXT) == expected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("placar de 13 a 27", set()),
+        ("venceram por 27 pontos a 13", set()),
+        ("placar de 20 a 30", {20.0}),
+    ],
+)
+def test_ungrounded_stat_numbers_checks_the_final_score(
+    text: str, expected: set[float]
+) -> None:
+    preview = GROUNDED.model_copy(update={"summary": text})
+
+    assert ungrounded_stat_numbers(preview, PLAYED_CONTEXT) == expected
+
+
+async def test_retries_when_the_final_score_is_invented() -> None:
+    invented_score = GROUNDED.model_copy(update={"summary": "Placar de 20 a 30."})
+    model, calls = scripted(invented_score, GROUNDED)
+
+    preview = await writer_for(model).write(PLAYED_CONTEXT)
+
+    assert preview == GROUNDED
+    assert len(calls) == 2

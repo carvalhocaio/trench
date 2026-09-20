@@ -9,6 +9,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from trench.analytics.calibration import Forecast
 from trench.analytics.efficiency import TeamEfficiency, compute_efficiency
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
 from trench.analytics.ratings import TeamRating
@@ -66,6 +67,13 @@ class LeaderFact(BaseModel):
     games: int
 
 
+class GameOutcomeFact(BaseModel):
+    home_score: int
+    away_score: int
+    winner: str | None
+    was_upset: bool
+
+
 class MatchupContext(BaseModel):
     season: int
     week: int
@@ -76,6 +84,7 @@ class MatchupContext(BaseModel):
     absences: list[AbsenceFact]
     leaders: list[LeaderFact]
     quarterbacks: list[QuarterbackFact]
+    outcome: GameOutcomeFact | None = None
 
     @property
     def win_probabilities_pct(self) -> set[int]:
@@ -223,6 +232,7 @@ def build_context(
         ),
         spread=round(projection.spread, 1),
         quarterbacks=_quarterback_facts(team_seasons, teams),
+        outcome=_outcome_fact(prediction, teams),
         absences=[
             AbsenceFact(
                 player=impact.player.name,
@@ -283,6 +293,30 @@ def _team_facts(
 
 def _round_or_none(value: float | None) -> float | None:
     return round(value, 1) if value is not None else None
+
+
+def _outcome_fact(
+    prediction: GamePrediction, teams: dict[UUID, Team]
+) -> GameOutcomeFact | None:
+    game = prediction.game
+    if game.score is None:
+        return None
+
+    winner_id = game.winner_id()
+    was_upset = False
+    if winner_id is not None:
+        forecast = Forecast(
+            home_win_probability=prediction.projection.home_win_probability,
+            home_won=winner_id == game.home_team_id,
+        )
+        was_upset = not forecast.favorite_won
+
+    return GameOutcomeFact(
+        home_score=game.score.home,
+        away_score=game.score.away,
+        winner=teams[winner_id].abbreviation if winner_id is not None else None,
+        was_upset=was_upset,
+    )
 
 
 def _quarterback_facts(

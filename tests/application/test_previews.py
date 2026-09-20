@@ -1,12 +1,12 @@
 import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from uuid import UUID
+from uuid import UUID, uuid7
 
 import pytest
 
 from tests.agent.samples import CONTEXT, GROUNDED
-from tests.analytics.samples import DEN, KC, LAC, LV, WEEK_ONE
+from tests.analytics.samples import DEN, KC, LAC, LV, WEEK_ONE, final
 from tests.factories import make_game, make_player
 from tests.fakes import (
     FakeAbsenceRepository,
@@ -17,17 +17,23 @@ from tests.fakes import (
     FakeTeamGameStatsRepository,
     FakeTeamRepository,
 )
+from trench.analytics.absences import AbsenceReport
+from trench.analytics.highlights import SeasonLeaders
+from trench.analytics.projection import Projection
+from trench.analytics.ratings import TeamRating
 from trench.application.highlights import HighlightsService
-from trench.application.predictions import PredictionService
+from trench.application.predictions import GamePrediction, PredictionService
 from trench.application.previews import (
     CachingPreviewWriter,
+    GameOutcomeFact,
     MatchupContext,
     MatchupPreview,
     PreviewService,
     PreviewUnavailableError,
+    build_context,
 )
 from trench.config import AnalyticsSettings
-from trench.domain.entities import Absence, PlayerGameStats, TeamGameStats
+from trench.domain.entities import Absence, Game, PlayerGameStats, TeamGameStats
 from trench.domain.enums import AbsenceStatus, Position
 
 
@@ -257,3 +263,111 @@ async def test_concurrent_calls_write_once() -> None:
 
     assert all(result == GROUNDED for result in results)
     assert writer.calls == 1
+
+
+EMPTY_LEADERS = SeasonLeaders(
+    passing_yards=(),
+    passing_touchdowns=(),
+    rushing_touchdowns_qb=(),
+    yards_per_carry=(),
+    sacks=(),
+    interceptions=(),
+)
+
+
+def _neutral_rating() -> TeamRating:
+    return TeamRating(
+        team_id=uuid7(),
+        games_played=1,
+        wins=1,
+        losses=0,
+        ties=0,
+        points_for_avg=20.0,
+        points_against_avg=20.0,
+        offense_strength=1.0,
+        defense_strength=1.0,
+    )
+
+
+def _prediction(game: Game, *, home_win_probability: float) -> GamePrediction:
+    return GamePrediction(
+        game=game,
+        home_rating=_neutral_rating(),
+        away_rating=_neutral_rating(),
+        absences=AbsenceReport(impacts=()),
+        projection=Projection(
+            home_points=24.0,
+            away_points=20.0,
+            home_win_probability=home_win_probability,
+        ),
+        as_of=datetime(2026, 9, 16, tzinfo=UTC),
+    )
+
+
+def test_outcome_is_none_before_the_game_is_played() -> None:
+    prediction = _prediction(make_game(KC, LV, week=2), home_win_probability=0.8)
+
+    context = build_context(
+        prediction,
+        home=KC,
+        away=LV,
+        leaders=EMPTY_LEADERS,
+        team_seasons=[],
+        efficiency={},
+    )
+
+    assert context.outcome is None
+
+
+def test_outcome_marks_the_favorite_winning_as_not_an_upset() -> None:
+    game = final(KC, LV, (30, 10), week=2)
+    prediction = _prediction(game, home_win_probability=0.8)
+
+    context = build_context(
+        prediction,
+        home=KC,
+        away=LV,
+        leaders=EMPTY_LEADERS,
+        team_seasons=[],
+        efficiency={},
+    )
+
+    assert context.outcome == GameOutcomeFact(
+        home_score=30, away_score=10, winner="KC", was_upset=False
+    )
+
+
+def test_outcome_flags_an_upset_when_the_underdog_wins() -> None:
+    game = final(KC, LV, (10, 30), week=2)
+    prediction = _prediction(game, home_win_probability=0.8)
+
+    context = build_context(
+        prediction,
+        home=KC,
+        away=LV,
+        leaders=EMPTY_LEADERS,
+        team_seasons=[],
+        efficiency={},
+    )
+
+    assert context.outcome == GameOutcomeFact(
+        home_score=10, away_score=30, winner="LV", was_upset=True
+    )
+
+
+def test_outcome_handles_ties_without_an_upset() -> None:
+    game = final(KC, LV, (20, 20), week=2)
+    prediction = _prediction(game, home_win_probability=0.5)
+
+    context = build_context(
+        prediction,
+        home=KC,
+        away=LV,
+        leaders=EMPTY_LEADERS,
+        team_seasons=[],
+        efficiency={},
+    )
+
+    assert context.outcome == GameOutcomeFact(
+        home_score=20, away_score=20, winner=None, was_upset=False
+    )

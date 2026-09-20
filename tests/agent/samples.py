@@ -1,6 +1,11 @@
 from datetime import UTC, datetime
 
-from trench.application.previews import MatchupContext, MatchupPreview, TeamFacts
+from trench.application.previews import (
+    GameOutcomeFact,
+    MatchupContext,
+    MatchupPreview,
+    TeamFacts,
+)
 
 CONTEXT = MatchupContext(
     season=2026,
@@ -40,6 +45,14 @@ CONTEXT = MatchupContext(
     absences=[],
     leaders=[],
     quarterbacks=[],
+)
+
+PLAYED_CONTEXT = CONTEXT.model_copy(
+    update={
+        "outcome": GameOutcomeFact(
+            home_score=13, away_score=27, winner="KC", was_upset=False
+        )
+    }
 )
 
 GROUNDED = MatchupPreview(
