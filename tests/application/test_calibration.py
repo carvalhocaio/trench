@@ -120,3 +120,13 @@ async def test_live_ignores_games_without_result(setup: Setup) -> None:
     await setup.snapshots.save(snapshot(upcoming, probability=0.4, hours_before=24))
 
     assert await setup.service.live(SEASON) == {}
+
+
+async def test_home_field_effect_reflects_the_seasons_games(setup: Setup) -> None:
+    await save(setup, *WEEK_ONE)
+
+    effect = await setup.service.home_field_effect(SEASON)
+
+    assert effect.games == 2
+    assert effect.home_win_rate == pytest.approx(1.0)
+    assert effect.average_home_margin == pytest.approx(10.0)

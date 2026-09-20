@@ -63,6 +63,22 @@ async def test_empty_season_has_no_calibration_data(client: AsyncClient) -> None
     body = response.json()
     assert body["backtest"] is None
     assert body["live"] == []
+    assert body["home_field_effect"] == {
+        "games": 0,
+        "home_win_rate": None,
+        "average_home_margin": None,
+    }
+
+
+async def test_home_field_effect_reflects_the_seasons_games(
+    client: AsyncClient, ids: dict[str, str]
+) -> None:
+    response = await client.get("/calibration", params={"season": 2026})
+
+    effect = response.json()["home_field_effect"]
+    assert effect["games"] == 3
+    assert effect["home_win_rate"] == pytest.approx(2 / 3)
+    assert effect["average_home_margin"] == pytest.approx((20 + 7 - 14) / 3)
 
 
 async def test_backtest_evaluates_games_from_two_weeks(

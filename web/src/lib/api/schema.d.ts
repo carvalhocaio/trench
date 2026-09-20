@@ -409,6 +409,7 @@ export interface components {
             backtest: components["schemas"]["CalibrationReportRead"] | null;
             /** Live */
             live: components["schemas"]["LiveCalibrationRead"][];
+            home_field_effect: components["schemas"]["HomeFieldEffectRead"];
         };
         /** CalibrationReportRead */
         CalibrationReportRead: {
@@ -528,6 +529,15 @@ export interface components {
             sacks: components["schemas"]["PlayerSeasonRead"][];
             /** Interceptions */
             interceptions: components["schemas"]["PlayerSeasonRead"][];
+        };
+        /** HomeFieldEffectRead */
+        HomeFieldEffectRead: {
+            /** Games */
+            games: number;
+            /** Home Win Rate */
+            home_win_rate: number | null;
+            /** Average Home Margin */
+            average_home_margin: number | null;
         };
         /** LiveCalibrationRead */
         LiveCalibrationRead: {

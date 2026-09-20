@@ -17,4 +17,5 @@ async def get_calibration(
         settings=settings,
         backtest=await calibration.backtest(season),
         live=await calibration.live(season),
+        home_field_effect=await calibration.home_field_effect(season),
     )

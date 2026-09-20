@@ -13,6 +13,7 @@ from pydantic import (
 
 from trench.analytics.calibration import CalibrationReport
 from trench.analytics.highlights import PlayerSeason, SeasonLeaders
+from trench.analytics.home_field import HomeFieldEffect
 from trench.analytics.ratings import TeamRating
 from trench.api.errors import ErrorCode
 from trench.application.predictions import GamePrediction
@@ -382,11 +383,18 @@ class LiveCalibrationRead(BaseModel):
     report: CalibrationReportRead
 
 
+class HomeFieldEffectRead(_Output):
+    games: int
+    home_win_rate: float | None
+    average_home_margin: float | None
+
+
 class CalibrationRead(BaseModel):
     season: int
     parameters: CalibrationParametersRead
     backtest: CalibrationReportRead | None
     live: list[LiveCalibrationRead]
+    home_field_effect: HomeFieldEffectRead
 
     @classmethod
     def build(
@@ -396,6 +404,7 @@ class CalibrationRead(BaseModel):
         settings: AnalyticsSettings,
         backtest: CalibrationReport | None,
         live: Mapping[str, CalibrationReport],
+        home_field_effect: HomeFieldEffect,
     ) -> CalibrationRead:
         return cls(
             season=season,
@@ -410,4 +419,5 @@ class CalibrationRead(BaseModel):
                 )
                 for version, report in live.items()
             ],
+            home_field_effect=HomeFieldEffectRead.model_validate(home_field_effect),
         )

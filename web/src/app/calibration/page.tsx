@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { getCalibration } from "@/lib/api/queries";
 import { parseFloatParam } from "@/lib/calibration";
+import { formatPercent, formatPoints } from "@/lib/format";
 import { currentSeason, parseIntParam } from "@/lib/season";
 import { CalibrationCard } from "@/components/calibration/calibration-card";
 import { CalibrationParamsForm } from "@/components/calibration/params-form";
@@ -30,6 +31,28 @@ export default async function CalibrationPage({
       <h1 className="text-lg font-semibold text-zinc-900">Calibração</h1>
 
       <CalibrationParamsForm season={season} parameters={data.parameters} />
+
+      <section className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600">
+        <p>
+          <strong className="text-zinc-900">Fator casa observado</strong> nesta
+          temporada:{" "}
+          {data.home_field_effect.games > 0 &&
+          data.home_field_effect.home_win_rate !== null &&
+          data.home_field_effect.average_home_margin !== null ? (
+            <>
+              {data.home_field_effect.games}{" "}
+              {data.home_field_effect.games === 1 ? "jogo" : "jogos"},{" "}
+              {formatPercent(data.home_field_effect.home_win_rate)} de vitórias em
+              casa, margem média de{" "}
+              {formatPoints(data.home_field_effect.average_home_margin)} pontos.
+            </>
+          ) : (
+            "ainda não há jogos suficientes nesta temporada."
+          )}{" "}
+          O modelo assume {formatPoints(data.parameters.home_field_advantage)} pontos
+          de vantagem total para o mandante.
+        </p>
+      </section>
 
       <section className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600">
         <p>

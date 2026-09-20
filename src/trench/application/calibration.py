@@ -4,6 +4,7 @@ from uuid import UUID
 
 from trench.analytics.calibration import CalibrationReport, Forecast, evaluate
 from trench.analytics.errors import InsufficientDataError
+from trench.analytics.home_field import HomeFieldEffect, compute_home_field_effect
 from trench.application.predictions import PredictionService
 from trench.domain.entities import Game, PredictionSnapshot
 from trench.domain.repositories import GameRepository, PredictionSnapshotRepository
@@ -44,6 +45,9 @@ class CalibrationService:
             version: evaluate(forecasts)
             for version, forecasts in sorted(by_version.items())
         }
+
+    async def home_field_effect(self, season: int) -> HomeFieldEffect:
+        return compute_home_field_effect(await self._games.list_by_season(season))
 
 
 def _home_won(game: Game) -> bool | None:
