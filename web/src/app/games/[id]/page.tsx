@@ -14,7 +14,8 @@ import { GameHeader } from "@/components/game/game-header";
 import { GameSides } from "@/components/game/game-sides";
 import { AbsencesTable } from "@/components/game/absences-table";
 import { PredictionHistoryTable } from "@/components/game/prediction-history-table";
-import { GamePreview, GamePreviewSkeleton } from "@/components/game/game-preview";
+import { GamePreview } from "@/components/game/game-preview";
+import { GamePreviewSkeleton } from "@/components/game/game-preview-skeleton";
 import { RecordPredictionButton } from "@/components/game/record-prediction-button";
 import { AdminGameLink } from "@/components/game/admin-game-link";
 

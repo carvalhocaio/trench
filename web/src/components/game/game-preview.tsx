@@ -1,34 +1,29 @@
 import { ApiError } from "@/lib/api/client";
 import { getPreview } from "@/lib/api/queries";
 import type { MatchupPreview } from "@/lib/api/types";
-
-export function GamePreviewSkeleton() {
-  return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4">
-      <div className="h-4 w-1/3 animate-pulse rounded bg-zinc-200" />
-      <div className="mt-4 space-y-2">
-        <div className="h-3 w-full animate-pulse rounded bg-zinc-100" />
-        <div className="h-3 w-5/6 animate-pulse rounded bg-zinc-100" />
-        <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-100" />
-      </div>
-    </section>
-  );
-}
+import { RetryPreviewButton } from "@/components/game/retry-preview-button";
 
 export async function GamePreview({ gameId }: { gameId: string }) {
   let preview: MatchupPreview | null = null;
+  let retryable = false;
   try {
     preview = (await getPreview(gameId)).preview;
   } catch (error) {
     if (!(error instanceof ApiError && (error.status === 503 || error.status === 409))) {
       throw error;
     }
+    retryable = error.status === 503;
   }
 
   if (!preview) {
     return (
-      <section className="rounded-lg border border-zinc-200 bg-white p-4">
-        <p className="text-sm text-zinc-400">Análise indisponível no momento.</p>
+      <section className="flex flex-col items-start gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+        <p className="text-sm text-zinc-400">
+          {retryable
+            ? "O Gemini não respondeu desta vez. Costuma ser momentâneo."
+            : "Análise indisponível no momento."}
+        </p>
+        {retryable && <RetryPreviewButton />}
       </section>
     );
   }
